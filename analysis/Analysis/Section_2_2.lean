@@ -32,6 +32,11 @@ Users of the companion who have completed the exercises in this section are welc
 
 namespace Chapter2
 
+
+--personal lemma
+lemma Nat.zero_e_0:zero=0:=by rfl
+
+
 /-- Definition 2.2.1. (Addition of natural numbers).
     Compare with Mathlib's `Nat.add` -/
 abbrev Nat.add (n m : Nat) : Nat := Nat.recurse (fun _ sum ↦ sum++) m n
@@ -83,7 +88,9 @@ lemma Nat.add_succ (n m:Nat) : n + (m++) = (n + m)++ := by
 
 /-- n++ = n + 1 (Why?). Compare with Mathlib's `Nat.succ_eq_add_one` -/
 theorem Nat.succ_eq_add_one (n:Nat) : n++ = n + 1 := by
-  sorry
+  rw [show 1 = 0++ from rfl]
+  rw[add_succ]
+  rw[add_zero]
 
 /-- Proposition 2.2.4 (Addition is commutative). Compare with Mathlib's `Nat.add_comm` -/
 theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
@@ -97,7 +104,14 @@ theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
 /-- Proposition 2.2.5 (Addition is associative) / Exercise 2.2.1
     Compare with Mathlib's `Nat.add_assoc`. -/
 theorem Nat.add_assoc (a b c:Nat) : (a + b) + c = a + (b + c) := by
-  sorry
+  revert c
+  apply induction
+  · rw[add_zero,add_zero]
+  intro n h
+  rw [add_succ]
+  rw[add_succ]
+  rw[add_succ]
+  rw[h]
 
 /-- Proposition 2.2.6 (Cancellation law).
     Compare with Mathlib's `Nat.add_left_cancel`. -/
@@ -174,7 +188,33 @@ extracts a witness `x` and a proof `hx : P x` of the property from a hypothesis 
 
 /-- Lemma 2.2.10 (unique predecessor) / Exercise 2.2.2 -/
 lemma Nat.uniq_succ_eq (a:Nat) (ha: a.IsPos) : ∃! b, b++ = a := by
-  sorry
+  revert a
+  apply induction
+  · rw[ Nat.IsPos ]
+    intro h
+    contradiction
+  intro a hd hp -- ⊢ ∃! b, b++ = a++ there exists a unique b such that b++ = a++ for all a
+  use a
+    -- our goal is that we want unique object b that exists
+    -- when we say use a , we're saying that we pressupose that unique object b= a
+
+  -- now goal changes to ⊢ (fun b ↦ b++ = a++) a ∧ ∀ (y : Nat),
+          --fun b then b++= a++ is simply lambda calculus
+          -- λ b, b++ = a+
+          -- For all natural numbers y  ,  if y is true that
+          -- for all natural nubmers y  that fulfills the lambda ocndition y is then equal to a
+          -- that is all possibilities is narrowed to a unique a
+
+
+        -- (fun b ↦ b++ = a++) y → y = a
+        -- before  we had there exists a unique b such that b++=a++
+        -- now have in a wordy form that there an explicit a
+  constructor -- we split into two goals
+  · rfl
+  intro c hc
+  --c is some natural number, hc is c++ = a++
+  exact Nat.succ_cancel hc
+
 
 /-- Definition 2.2.11 (Ordering of the natural numbers).
     This defines the `≤` notation on the natural numbers. -/
@@ -220,13 +260,81 @@ example : (8:Nat) > 5 := by
 
 /-- Compare with Mathlib's `Nat.lt_succ_self`. -/
 theorem Nat.succ_gt_self (n:Nat) : n++ > n := by
-  sorry
+  constructor
+  use 1
+  rw[succ_eq_add_one]
+  rw[succ_eq_add_one]
+  nth_rewrite 1 [← add_zero n]
+  by_contra h
+  apply add_left_cancel at h
+  contradiction
+
+
+
+--personal theorems and lemmas
+
+theorem Nat.succ_le_succ{x y: Nat} (hx : x++ ≤ y++):x≤ y:=by
+  cases' hx with d hd
+  use d
+  rw[succ_add] at hd
+  apply succ_cancel at hd
+  exact hd
+
+theorem Nat.succ_lt_succ{x y: Nat} (hx : x++ < y++):x< y:=by
+  rw[lt_iff]
+  rw[lt_iff] at hx
+  have hxl:  (∃ a, y++ = x++ + a) :=by exact hx.left
+  have hxr0: x++ ≠  y++:=by exact hx.right
+  constructor
+  · rw[succ_eq_add_one,succ_eq_add_one] at hxl
+    -- nth_rewrite 1 [add_comm] at hxl
+    -- nth_rewrite 2 [add_comm] at hxl
+    -- --nth_rewrite 1 [← add_assoc] at hxl
+    -- apply add_cancel_left at hxl
+
+    --add_assoc (a b c:Nat) : (a + b) + c = a + (b + c)
+    --nth_rewrite 1 [← add_assoc] at hxl
+    --rw[add_assoc] at hxl
+    cases' hxl with n h
+    · use n
+      nth_rewrite 1 [add_comm] at h
+      nth_rewrite 3 [add_comm] at h
+      rw[add_assoc] at h
+
+      apply add_left_cancel at h
+      exact h
+
+  · by_contra h
+    have h2: x++ ≠ y++ → x≠ y:=by
+      intro h2
+      by_contra h3
+      rw[h3] at h2
+      tauto
+    apply h2 at hxr0
+    contradiction
+
+theorem Nat.le_one{a:Nat} (h:a≤ 1):a=0 ∨ a= 1 :=by
+  cases' a with y
+  rw[zero_e_0] at h
+  rw[zero_e_0]
+  left
+  rfl
+  right
+  rw[← zero_succ] at h
+  apply succ_le_succ at h
+  rcases h with ⟨n,h1⟩
+  symm at h1
+  apply add_eq_zero at h1
+  have h2:y=0:=by exact h1.left
+  rw[h2,zero_succ]
 
 /-- Proposition 2.2.12 (Basic properties of order for natural numbers) / Exercise 2.2.3
 
 (a) (Order is reflexive). Compare with Mathlib's `Nat.le_refl`.-/
 theorem Nat.ge_refl (a:Nat) : a ≥ a := by
-  sorry
+  use 0
+  symm
+  rw[add_zero]
 
 @[refl]
 theorem Nat.le_refl (a:Nat) : a ≤ a := a.ge_refl
@@ -237,17 +345,62 @@ example (a b:Nat): a+b ≥ a+b := by rfl
 /-- (b) (Order is transitive).  The `obtain` tactic will be useful here.
     Compare with Mathlib's `Nat.le_trans`. -/
 theorem Nat.ge_trans {a b c:Nat} (hab: a ≥ b) (hbc: b ≥ c) : a ≥ c := by
-  sorry
+  rw[ge_iff_le]
+  rw[ge_iff_le,le_iff] at hab
+  rw[ge_iff_le,le_iff] at hbc
+  rcases hab with ⟨k, rfl⟩      -- replaces `a` with `b + k`
+  rcases hbc with ⟨l, rfl⟩      -- replaces `b` with `c + l`
+
+  use l+k
+  exact add_assoc c l k
 
 theorem Nat.le_trans {a b c:Nat} (hab: a ≤ b) (hbc: b ≤ c) : a ≤ c := Nat.ge_trans hbc hab
 
 /-- (c) (Order is anti-symmetric). Compare with Mathlib's `Nat.le_antisymm`. -/
 theorem Nat.ge_antisymm {a b:Nat} (hab: a ≥ b) (hba: b ≥ a) : a = b := by
-  sorry
+  rw[ge_iff_le,le_iff] at hab
+  rw[ge_iff_le,le_iff] at hba
+
+  rcases hab with ⟨k, rfl⟩
+
+  rcases hba with ⟨l, h⟩
+  nth_rewrite 1 [← add_zero b] at h
+  rw[add_assoc] at h
+
+  apply add_left_cancel at h
+  symm at h
+  apply add_eq_zero at h
+  rw[h.left]
+  rw[add_zero]
 
 /-- (d) (Addition preserves order).  Compare with Mathlib's `Nat.add_le_add_right`. -/
 theorem Nat.add_ge_add_right (a b c:Nat) : a ≥ b ↔ a + c ≥ b + c := by
-  sorry
+  constructor
+  intro h
+  rw[ge_iff_le,le_iff] at h
+  rw[ge_iff_le,le_iff]
+  rcases h with ⟨k,rfl ⟩
+  rw[add_assoc]
+  nth_rewrite 2 [add_comm]
+  --nth_rewrite 1 [← add_assoc]
+  rw[← add_assoc]
+  use k
+  intro h
+  rw[ge_iff_le,le_iff] at h
+  rw[ge_iff_le,le_iff]
+
+  rcases h with ⟨k,hk ⟩
+  use k
+
+  rw[← add_comm] at hk
+  nth_rewrite 1 [add_assoc] at hk
+
+  nth_rewrite 2 [← add_comm] at hk
+  rw[add_assoc] at hk
+
+  apply add_left_cancel at hk
+  rw[add_comm]
+  exact hk
 
 /-- (d) (Addition preserves order).  Compare with Mathlib's `Nat.add_le_add_left`.  -/
 theorem Nat.add_ge_add_left (a b c:Nat) : a ≥ b ↔ c + a ≥ c + b := by
