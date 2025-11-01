@@ -60,17 +60,30 @@ theorem Nat.two_mul (m: Nat) : 2 * m = 0 + m + m := by
 /-- This lemma will be useful to prove Lemma 2.3.2.
 Compare with Mathlib's `Nat.mul_zero` -/
 lemma Nat.mul_zero (n: Nat) : n * 0 = 0 := by
-  sorry
+  induction' n with m hm
+  · rw[zero_e_0,zero_mul]
+  · rw[succ_mul]
+    rw[hm,add_zero]
 
 /-- This lemma will be useful to prove Lemma 2.3.2.
 Compare with Mathlib's `Nat.mul_succ` -/
 lemma Nat.mul_succ (n m:Nat) : n * m++ = n * m + n := by
-  sorry
-
+  induction' n with i hi
+  · rw[zero_e_0]
+    rw[zero_mul,zero_mul,add_zero]
+  · rw[succ_mul]
+    rw[hi]
+    rw[add_succ,add_succ,succ_mul]
+    nth_rewrite 2 [add_assoc]
+    nth_rewrite 4 [add_comm]
+    rw[add_assoc]
 /-- Lemma 2.3.2 (Multiplication is commutative) / Exercise 2.3.1
 Compare with Mathlib's `Nat.mul_comm` -/
 lemma Nat.mul_comm (n m: Nat) : n * m = m * n := by
-  sorry
+  induction' n with i h
+  · rw[zero_e_0,zero_mul,mul_zero]
+  · rw[mul_succ,succ_mul]
+    rw[h]
 
 /-- Compare with Mathlib's `Nat.mul_one` -/
 theorem Nat.mul_one (m: Nat) : m * 1 = m := by
@@ -79,7 +92,11 @@ theorem Nat.mul_one (m: Nat) : m * 1 = m := by
 /-- This lemma will be useful to prove Lemma 2.3.3.
 Compare with Mathlib's `Nat.mul_pos` -/
 lemma Nat.pos_mul_pos {n m: Nat} (h₁: n.IsPos) (h₂: m.IsPos) : (n * m).IsPos := by
-  sorry
+  rw[isPos_iff]
+  rw[isPos_iff] at h₁ h₂
+  by_contra h
+  have nm: n = 0 ∨ m = 0 :=by rw[mul_eq_zero_iff] at h; exact h
+  tauto
 
 /-- Lemma 2.3.3 (Positive natural numbers have no zero divisors) / Exercise 2.3.2.
     Compare with Mathlib's `Nat.mul_eq_zero`.  -/

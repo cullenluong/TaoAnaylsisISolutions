@@ -4,6 +4,7 @@ The files in this directory contain a formalization of my text [_An introduction
 
 Portions of the text that were left as exercises to the reader, as well as many of the proofs in the text are rendered in this translation as `sorry`s.  As an optional project for my measure theory class, students can claim one or of the theorems or exercises to complete their proofs as pull requests.  Readers who are not in my classes are also welcome to submit such proofs, as long as they are not on the following list of claimed theorems:
 
+- Exercise 1.1.1 (claimed by James Thelen)
 - Exercise 1.1.6 (claimed by Soham Patil)
 
 Some of the material in this text is duplicated in Lean's standard math library [Mathlib](https://leanprover-community.github.io/mathlib4_docs/), though with slightly different definitions.  To reconcile these discrepancies, this formalization will gradually transition from the textbook-provided definitions to the Mathlib-provided definitions as one progresses further into the text, thus sacrificing the self-containedness of the formalization in favor of compatibility with Mathlib.  For instance, Chapter 2 develops a theory of the natural numbers independent of Mathlib, but all subsequent chapters will use the Mathlib natural numbers instead.  (An epilogue to Chapter 2 is provided to show that the two notions of the natural numbers are isomorphic.)  As such, this formalization can also be used as an introduction to various portions of Mathlib.
@@ -17,13 +18,12 @@ Some of the material in this text is duplicated in Lean's standard math library 
     - Section 1.1.2: Jordan measure ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_1_2.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_1_2.lean))
     - Section 1.1.3: Connections with the Riemann integral ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_1_3.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_1_3.lean))
   - Section 1.2: Lebesgue measure
-    - Introduction: (Documentation) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_2.lean))
-    - Section 1.2.1: Properties of Lebesgue outer measure (Documentation) (Lean source)
-    - Section 1.2.2: Lebesgue measurability (Documentation) (Lean source)
-    - Section 1.2.3: Non-measurable sets (Documentation) (Lean source)
+    - Introduction: ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_2.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_2.lean))
+    - Section 1.2.1: Properties of Lebesgue outer measure ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_2_1.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_2_1.lean))
+    - Section 1.2.2: Lebesgue measurability ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_2_2.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_2_2.lean))
+    - Section 1.2.3: Non-measurable sets ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_2_3.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_2_3.lean))
   - Section 1.3: The Lebesgue integral
-    - Introduction: (Documentation) (Lean source)
-    - Section 1.3.1: Integration of simple functions (Documentation) (Lean source)
+    - Section 1.3.1: Integration of simple functions ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_1.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_1.lean))
     - Section 1.3.2: Measurable functions (Documentation) (Lean source)
     - Section 1.3.3: Unsigned Lebesgue integrals (Documentation) (Lean source)
     - Section 1.3.4: Absolute integrability (Documentation) (Lean source)

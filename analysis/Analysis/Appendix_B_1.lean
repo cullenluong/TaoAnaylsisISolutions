@@ -150,7 +150,7 @@ theorem PosintDecimal.pos (p:PosintDecimal) : 0 < (p:ℕ) := by
       . infer_instance
       grind
 
-/-- An operation implicit in the proof of Theorem B.1.5: -/
+/-- An operation implicit in the proof of Theorem B.1.4: -/
 abbrev PosintDecimal.append (p:PosintDecimal) (d:Digit) : PosintDecimal :=
   mk' p.head (p.digits.tail ++ [d]) p.head_ne_zero
 
@@ -183,7 +183,7 @@ theorem PosintDecimal.eq_append {p:PosintDecimal} (h: 2 ≤ p.digits.length) : �
   convert (List.dropLast_append_getLast _).symm using 2; grind
   simp [←List.length_pos_iff]; omega
 
-/-- Theorem B.1.5 (Uniqueness and existence of decimal representations) -/
+/-- Theorem B.1.4 (Uniqueness and existence of decimal representations) -/
 theorem PosintDecimal.exists_unique (n:ℕ) : n > 0 → ∃! p:PosintDecimal, (p:ℕ) = n := by
   -- this proof is written to follow the structure of the original text.
   apply n.case_strong_induction_on
@@ -294,7 +294,7 @@ theorem IntDecimal.Int_bij : Function.Bijective IntDecimal.toInt := by
   simp [toInt, hp]
 
 abbrev PosintDecimal.digit (p:PosintDecimal) (i:ℕ) : Digit :=
-  if h: i < p.digits.length then p.digits[i] else 0
+  if h: i < p.digits.length then p.digits[p.digits.length - i - 1] else 0
 
 abbrev PosintDecimal.carry (p q:PosintDecimal) : ℕ → ℕ := Nat.rec 0 (fun i ε ↦ if ((p.digit i:ℕ) + (q.digit i:ℕ) + ε) < 10 then 0 else 1)
 
@@ -313,7 +313,19 @@ abbrev PosintDecimal.sum_digit (p q:PosintDecimal) (i:ℕ) : ℕ :=
 theorem PosintDecimal.sum_digit_lt (p q:PosintDecimal) (i:ℕ) :
   p.sum_digit q i < 10 := by sorry
 
-theorem PosintDecimal.sum_digit_top (p q:PosintDecimal) : ∃ l, p.sum_digit q l ≠ 0 ∧ ∀ i > l, p.sum_digit q l = 0 := by sorry
+/-- Define this number such that it satisfies the two following theorems. -/
+def PosintDecimal.sum_digit_top (p q:PosintDecimal) : ℕ := by sorry
 
-theorem PosintDecimal.sum_eq (p q:PosintDecimal) : ∃ (r:PosintDecimal) (i:ℕ), (r.digit i:ℕ) = p.sum_digit q i ∧ (r:ℕ) = p + q := by
-  sorry
+theorem PosintDecimal.leading_nonzero (p q:PosintDecimal) :
+    p.sum_digit q (p.sum_digit_top q) ≠ 0 := sorry
+
+theorem PosintDecimal.out_of_range_eq_zero (p q:PosintDecimal) :
+    ∀ i > ↑(p.sum_digit_top q), p.sum_digit q i = 0 := sorry
+
+def PosintDecimal.longAddition (p q : PosintDecimal) : PosintDecimal where
+  digits := sorry
+  nonempty := sorry
+  nonzero := sorry
+
+theorem PosintDecimal.sum_eq (p q:PosintDecimal) (i:ℕ) :
+    (((p.longAddition q).digit i):ℕ) = p.sum_digit q i ∧ (p.longAddition q:ℕ) = p + q := by sorry

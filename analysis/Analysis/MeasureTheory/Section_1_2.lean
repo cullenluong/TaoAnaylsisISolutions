@@ -55,7 +55,7 @@ example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (EuclideanSpace'.equiv_Real
 example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (EuclideanSpace'.equiv_Real.symm '' (Set.range (fun q:ℚ ↦ (q:ℝ)))) = 0 := by
   sorry
 
-def Lebesgue_measurable {d:ℕ} (E: Set (EuclideanSpace' d)) : Prop :=
+def LebesgueMeasurable {d:ℕ} (E: Set (EuclideanSpace' d)) : Prop :=
   ∀ ε > 0, ∃ U: Set (EuclideanSpace' d), IsOpen U ∧ E ⊆ U ∧ Lebesgue_outer_measure (U \ E) ≤ ε
 
 noncomputable def Lebesgue_measure {d:ℕ} (E: Set (EuclideanSpace' d)) : EReal := Lebesgue_outer_measure E
