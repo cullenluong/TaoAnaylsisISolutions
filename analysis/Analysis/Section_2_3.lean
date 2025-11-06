@@ -168,6 +168,8 @@ theorem Nat.mul_assoc (a b c: Nat) : (a * b) * c = a * (b * c) := by
   revert c; apply induction
   · repeat rw[mul_zero]
   · intro m h
+    rw[mul_succ,mul_succ,mul_add,h]
+
 
 /-- (Not from textbook)  Nat is a commutative semiring.
     This allows tactics such as `ring` to apply to the Chapter 2 natural numbers. -/
@@ -244,7 +246,8 @@ example (a b c d:Nat) (hab: a ≤ b) : c*a*d ≤ c*b*d := by
 Compare with Mathlib's `Nat.mod_eq_iff` -/
 theorem Nat.exists_div_mod (n:Nat) {q: Nat} (hq: q.IsPos) :
     ∃ m r: Nat, 0 ≤ r ∧ r < q ∧ n = m * q + r := by
-  sorry
+  constructor
+  · obtain h3
 
 /-- Definition 2.3.11 (Exponentiation for natural numbers) -/
 abbrev Nat.pow (m n: Nat) : Nat := Nat.recurse (fun _ prod ↦ prod * m) 1 n
