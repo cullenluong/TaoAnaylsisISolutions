@@ -462,8 +462,7 @@ theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
     rw[← succ_add]  at h3
     --rw[succ_eq_add_one] at h3
     --rw[add_assoc]  at h3
-    have h3_exists : ∃ m, b = a++ + m :=
-  ⟨m, h3⟩
+    have h3_exists : ∃ m, b = a++ + m := ⟨m, h3⟩
 
 
     rw[← le_iff] at h3_exists
@@ -604,6 +603,23 @@ theorem Nat.unique_n_a_add {a n:Nat} (h:n≠ 0): a ≠ a+n := by
   apply add_left_cancel at h2
   symm at h2
   tauto
+
+
+theorem Nat.zero_ne_succ {a : Nat}: 0 ≠ a++ :=by
+  by_contra h
+  rw[← one_add] at h
+  symm at h
+  apply add_eq_zero at h
+  have h2: 1≠0:=by tauto
+  tauto
+
+
+
+
+
+
+
+
 
 
 theorem Nat.not_le_gte {a b:Nat} (h:¬ a < b):  b ≤ a :=by

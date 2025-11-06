@@ -91,17 +91,60 @@ theorem Nat.mul_one (m: Nat) : m * 1 = m := by
 
 /-- This lemma will be useful to prove Lemma 2.3.3.
 Compare with Mathlib's `Nat.mul_pos` -/
+
+--Level 7 / 10 : mul_ne_zero
+-- if n and m are positive then n*m is positive
 lemma Nat.pos_mul_pos {n m: Nat} (h₁: n.IsPos) (h₂: m.IsPos) : (n * m).IsPos := by
+  -- non indution proof
+  apply uniq_succ_eq at h₁
+  apply uniq_succ_eq at h₂
+
+  rcases h₁ with ⟨m2, ⟨h1, _uniq⟩⟩
+  subst h1
+  rcases h₂ with ⟨n2, ⟨h2, _uniq2⟩⟩
+  subst h2
+  rw[succ_mul]
+
+  rw[add_succ]
   rw[isPos_iff]
-  rw[isPos_iff] at h₁ h₂
-  by_contra h
-  have nm: n = 0 ∨ m = 0 :=by rw[mul_eq_zero_iff] at h; exact h
-  tauto
+  --tauto works here but I'm not sure why
+  symm
+  -- theorem from Natural world that says 0 ≠ a++ for any natural number a
+  apply zero_ne_succ
+
+
+
+
+
+  -- tauto
+
+  -- induction' n with i h
+  -- ·
+  --   rw[Nat.zero_e_0] at *
+  --   contradiction
+  -- · rw[succ_mul]
+  --   apply add_pos_right
+  --   apply h₂
+
+
 
 /-- Lemma 2.3.3 (Positive natural numbers have no zero divisors) / Exercise 2.3.2.
     Compare with Mathlib's `Nat.mul_eq_zero`.  -/
 lemma Nat.mul_eq_zero (n m: Nat) : n * m = 0 ↔ n = 0 ∨ m = 0 := by
-  sorry
+  constructor
+  · intro h
+    by_contra h2
+    push_neg at h2
+    rw[← isPos_iff,← isPos_iff] at h2
+    have h3:  (n * m).IsPos  :=by exact pos_mul_pos h2.left h2.right
+    contradiction
+  · intro h
+    cases' h with hn hm
+    · rw[hn]
+      rw[zero_mul]
+    · rw[hm]
+      rw[mul_zero]
+
 
 /-- Proposition 2.3.4 (Distributive law)
 Compare with Mathlib's `Nat.mul_add` -/
@@ -122,7 +165,9 @@ theorem Nat.add_mul (a b c: Nat) : (a + b)*c = a*c + b*c := by
 /-- Proposition 2.3.5 (Multiplication is associative) / Exercise 2.3.3
 Compare with Mathlib's `Nat.mul_assoc` -/
 theorem Nat.mul_assoc (a b c: Nat) : (a * b) * c = a * (b * c) := by
-  sorry
+  revert c; apply induction
+  · repeat rw[mul_zero]
+  · intro m h
 
 /-- (Not from textbook)  Nat is a commutative semiring.
     This allows tactics such as `ring` to apply to the Chapter 2 natural numbers. -/
