@@ -32,7 +32,9 @@ abbrev EuclideanSpace'.equiv_Real : EuclideanSpace' 1 ≃ ℝ where
     subst this; simp
   right_inv x := by aesop
 
-instance EuclideanSpace'.inst_coeReal : Coe ℝ (EuclideanSpace' 1) := ⟨equiv_Real.symm⟩
+abbrev Real.equiv_EuclideanSpace' : ℝ ≃ EuclideanSpace' 1 := EuclideanSpace'.equiv_Real.symm
+
+instance EuclideanSpace'.inst_coeReal : Coe ℝ (EuclideanSpace' 1) := ⟨Real.equiv_EuclideanSpace'⟩
 
 theorem EuclideanSpace'.norm_eq {n:ℕ} (x: EuclideanSpace' n) : ‖x‖ = √(∑ i, (x i)^2) := by
   convert EuclideanSpace.norm_eq x using 3 with i
@@ -223,6 +225,12 @@ example {A B:Type*} (x: A → B → ENNReal) : ∑' p:A × B, x p.1 p.2 = ∑' b
   calc
     ∑' p : A × B, x p.1 p.2 = ∑' a, ∑' b, x a b := ENNReal.tsum_prod (f := x)
     _ = ∑' b, ∑' a, x a b := ENNReal.tsum_comm (f := x)
+
+noncomputable instance EReal.inst_posPart : PosPart EReal where
+  posPart := fun x ↦ if x ≥ 0 then x else 0
+
+noncomputable instance EReal.inst_negPart : NegPart EReal where
+  negPart := fun x ↦ if x ≤ 0 then -x else 0
 
 /-- Axiom 0.0.4 (Axiom of choice)-/
 noncomputable def Set.choose {A: Type*} {E: A → Type*} (hE: ∀ n, Nonempty (E n)) :

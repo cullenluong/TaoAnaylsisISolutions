@@ -31,22 +31,22 @@ def TaggedPartition.RiemannSum {I: BoundedInterval} {n:ℕ} (f: ℝ → ℝ) (P:
 /-- `Sigma (TaggedPartition I)` is the type of all partitions of `I` with an unspecified number `n` of components.  Here we define what it means to converge to zero in this type. -/
 instance TaggedPartition.nhds_zero (I: BoundedInterval) : Filter (Sigma (TaggedPartition I)) := Filter.comap (fun P ↦ P.snd.norm) (nhds 0)
 
-def riemann_integrable_eq (f: ℝ → ℝ) (I: BoundedInterval) (R: ℝ) : Prop := (TaggedPartition.nhds_zero I).Tendsto (fun P ↦ TaggedPartition.RiemannSum f P.snd) (nhds R)
+def riemann_integral_eq (f: ℝ → ℝ) (I: BoundedInterval) (R: ℝ) : Prop := (TaggedPartition.nhds_zero I).Tendsto (fun P ↦ TaggedPartition.RiemannSum f P.snd) (nhds R)
 
 /-- We enforce `I` to be closed for the definition of Riemann integrability. -/
-abbrev RiemannIntegrableOn (f: ℝ → ℝ) (I: BoundedInterval) : Prop := I = Icc I.a I.b ∧ ∃ R, riemann_integrable_eq f I R
+abbrev RiemannIntegrableOn (f: ℝ → ℝ) (I: BoundedInterval) : Prop := I = Icc I.a I.b ∧ ∃ R, riemann_integral_eq f I R
 
 open Classical in
 noncomputable def riemannIntegral (f: ℝ → ℝ) (I: BoundedInterval) : ℝ := if h:RiemannIntegrableOn f I then h.2.choose else 0
 
 /-- Definition 1.1.15 (Riemann integrability) -/
-lemma riemann_integral_of_integrable {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) : riemann_integrable_eq f I (riemannIntegral f I) := by sorry
+lemma riemann_integral_of_integrable {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) : riemann_integral_eq f I (riemannIntegral f I) := by sorry
 
 /-- Definition 1.1.15 (Riemann integrability) -/
-lemma riemann_integral_eq_iff_of_integrable {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) (R:ℝ): riemann_integrable_eq f I R ↔ R = riemannIntegral f I := by sorry
+lemma riemann_integral_eq_iff_of_integrable {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) (R:ℝ): riemann_integral_eq f I R ↔ R = riemannIntegral f I := by sorry
 
 /-- Definition 1.1.15 (Riemann integrability)-/
-lemma riemann_integral_eq_iff {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) (R:ℝ): riemann_integrable_eq f I R ↔ ∀ ε>0, ∃ δ>0, ∀ n, ∀ P: TaggedPartition I n, P.norm ≤ δ → |P.RiemannSum f - R| ≤ ε := by sorry
+lemma riemann_integral_eq_iff {f:ℝ → ℝ} {I: BoundedInterval} (h: RiemannIntegrableOn f I) (R:ℝ): riemann_integral_eq f I R ↔ ∀ ε>0, ∃ δ>0, ∀ n, ∀ P: TaggedPartition I n, P.norm ≤ δ → |P.RiemannSum f - R| ≤ ε := by sorry
 
 /-- Definition 1.1.15.  (Riemann integrability) I *think* this follows from the "junk" definitions of various Mathlib operations, but needs to be checked. If not, then the above definitions need to be adjusted appropriately. -/
 lemma RiemannIntegrable.of_zero_length (f: ℝ → ℝ) {I: BoundedInterval} (h: |I|ₗ = 0) : RiemannIntegrableOn f I ∧ riemannIntegral f I = 0 := by sorry
@@ -94,10 +94,10 @@ theorem PiecewiseConstantFunction.integral_add {I: BoundedInterval} {f g: ℝ �
 theorem PiecewiseConstantFunction.integral_mono {I: BoundedInterval} {f g: ℝ → ℝ} (hf: PiecewiseConstantOn f I) (hg: PiecewiseConstantOn g I) (hmono: ∀ x ∈ I.toSet, f x ≤ g x): hf.integral ≤ hg.integral := by sorry
 
 /-- Exercise 1.1.21 (c) (Piecewise constant integral of indicator functions) -/
-theorem PiecewiseConstantOn.indicator_of_elem (I: BoundedInterval) {E:Set ℝ} (hE: IsElementary (EuclideanSpace'.equiv_Real.symm '' E) ) : PiecewiseConstantOn E.indicator' I := by sorry
+theorem PiecewiseConstantOn.indicator_of_elem (I: BoundedInterval) {E:Set ℝ} (hE: IsElementary (Real.equiv_EuclideanSpace' '' E) ) : PiecewiseConstantOn E.indicator' I := by sorry
 
 /-- Exercise 1.1.21 (c) (Piecewise constant integral of indicator functions) -/
-theorem PiecewiseConstantFunction.integral_of_elem {I: BoundedInterval} {E:Set ℝ} (hE: IsElementary (EuclideanSpace'.equiv_Real.symm '' E) ) (hsub: E ⊆ I.toSet) : (PiecewiseConstantOn.indicator_of_elem I hE).integral = hE.measure := by sorry
+theorem PiecewiseConstantFunction.integral_of_elem {I: BoundedInterval} {E:Set ℝ} (hE: IsElementary (Real.equiv_EuclideanSpace' '' E) ) (hsub: E ⊆ I.toSet) : (PiecewiseConstantOn.indicator_of_elem I hE).integral = hE.measure := by sorry
 
 /-- Definition 1.1.6 (Darboux integral) -/
 noncomputable def LowerDarbouxIntegral (f:ℝ → ℝ) (I: BoundedInterval) : ℝ := sSup { R | ∃ g: PiecewiseConstantFunction I, g.integral = R ∧ ∀ x ∈ I.toSet, g.f x ≤ f x }
@@ -146,17 +146,17 @@ theorem riemann_integral_add {I: BoundedInterval} {f g: ℝ → ℝ} (hf: Rieman
 theorem riemann_integral_mono {I: BoundedInterval} {f g: ℝ → ℝ} (hf: RiemannIntegrableOn f I) (hg: RiemannIntegrableOn g I) (hmono: ∀ x ∈ I.toSet, f x ≤ g x): riemannIntegral f ≤ riemannIntegral g := by sorry
 
 /-- Exercise 1.1.24 (c) (Indicator functions) -/
-theorem RiemannIntegrableOn.indicator_of_elem (I: BoundedInterval) {E:Set ℝ} (hE: JordanMeasurable (EuclideanSpace'.equiv_Real.symm '' E) ) : RiemannIntegrableOn E.indicator' I := by sorry
+theorem RiemannIntegrableOn.indicator_of_elem (I: BoundedInterval) {E:Set ℝ} (hE: JordanMeasurable (Real.equiv_EuclideanSpace' '' E) ) : RiemannIntegrableOn E.indicator' I := by sorry
 
 /-- Exercise 1.1.24 (c) (Piecewise constant integral of indicator functions) -/
-theorem riemann_integral_of_elem {I: BoundedInterval} {E:Set ℝ} (hE: JordanMeasurable (EuclideanSpace'.equiv_Real.symm '' E) ) (hsub: E ⊆ I.toSet) : riemannIntegral E.indicator' I = hE.measure := by sorry
+theorem riemann_integral_of_elem {I: BoundedInterval} {E:Set ℝ} (hE: JordanMeasurable (Real.equiv_EuclideanSpace' '' E) ) (hsub: E ⊆ I.toSet) : riemannIntegral E.indicator' I = hE.measure := by sorry
 
 /-- Exercise 1.1.24 (Uniqueness) -/
 theorem riemann_integral_unique {I: BoundedInterval} (integ: (ℝ → ℝ) → ℝ)
   (hsmul: ∀ (c:ℝ) (f: ℝ → ℝ) (hf: RiemannIntegrableOn f I), integ (c • f) = c • (integ f))
   (hadd: ∀ (f g: ℝ → ℝ) (hf: RiemannIntegrableOn f I) (hg: RiemannIntegrableOn g I), integ (f + g) = integ f + integ g)
   (hmono: ∀ (f g: ℝ → ℝ) (hf: RiemannIntegrableOn f I) (hg: RiemannIntegrableOn g I) (hmono: ∀ x ∈ I.toSet, f x ≤ g x), integ f ≤ integ g)
-  (hindicator: ∀ (E:Set ℝ) (hE: JordanMeasurable (EuclideanSpace'.equiv_Real.symm '' E) ) (hsub: E ⊆ I.toSet), integ E.indicator' = hE.measure) :
+  (hindicator: ∀ (E:Set ℝ) (hE: JordanMeasurable (Real.equiv_EuclideanSpace' '' E) ) (hsub: E ⊆ I.toSet), integ E.indicator' = hE.measure) :
   ∀ f, RiemannIntegrableOn f I → integ f = riemannIntegral f I := by sorry
 
 /-- Exercise 1.1.25 (Area interpretation of Riemann integral) -/

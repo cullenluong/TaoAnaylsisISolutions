@@ -11,14 +11,14 @@ open BoundedInterval
 
 /-- Exercise 1.2.1 -/
 example : ∃ E: ℕ → Set ℝ, (∀ n, Bornology.IsBounded (E n)) ∧
-  (∀ n, JordanMeasurable (EuclideanSpace'.equiv_Real.symm '' (E n)))
-  ∧ ¬ JordanMeasurable (⋃ n, EuclideanSpace'.equiv_Real.symm '' (E n)) := by
+  (∀ n, JordanMeasurable (Real.equiv_EuclideanSpace' '' (E n)))
+  ∧ ¬ JordanMeasurable (⋃ n, Real.equiv_EuclideanSpace' '' (E n)) := by
   sorry
 
 /-- Exercise 1.2.1 -/
 example : ∃ E: ℕ → Set ℝ, (∀ n, Bornology.IsBounded (E n)) ∧
-  (∀ n, JordanMeasurable (EuclideanSpace'.equiv_Real.symm '' (E n)))
-  ∧ ¬ JordanMeasurable (⋂ n, EuclideanSpace'.equiv_Real.symm '' (E n)) := by
+  (∀ n, JordanMeasurable (Real.equiv_EuclideanSpace' '' (E n)))
+  ∧ ¬ JordanMeasurable (⋂ n, Real.equiv_EuclideanSpace' '' (E n)) := by
   sorry
 
 /-- Exercise 1.2.2 -/
@@ -43,16 +43,16 @@ theorem Lebesgue_outer_measure_le_Jordan {d:ℕ} {E: Set (EuclideanSpace' d)} (h
   sorry
 
 /-- Example 1.2.1.  With the junk value conventions of this companion, the Jordan outer measure of the rationals is zero rather than infinite (I think). -/
-example {R:ℝ} (hR: 0 < R) : Jordan_outer_measure (EuclideanSpace'.equiv_Real.symm '' (Set.Icc (-R) R ∩ Set.range (fun q:ℚ ↦ (q:ℝ)))) = 2*R := by
+example {R:ℝ} (hR: 0 < R) : Jordan_outer_measure (Real.equiv_EuclideanSpace' '' (Set.Icc (-R) R ∩ Set.range (fun q:ℚ ↦ (q:ℝ)))) = 2*R := by
   sorry
 
 theorem Countable.Lebesgue_measure {d:ℕ} {E: Set (EuclideanSpace' d)} (hE: E.Countable) : Lebesgue_outer_measure E = 0 := by
   sorry
 
-example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (EuclideanSpace'.equiv_Real.symm '' (Set.Icc (-R) R ∩ Set.range (fun q:ℚ ↦ (q:ℝ)))) = 0 := by
+example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (Real.equiv_EuclideanSpace' '' (Set.Icc (-R) R ∩ Set.range (fun q:ℚ ↦ (q:ℝ)))) = 0 := by
   sorry
 
-example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (EuclideanSpace'.equiv_Real.symm '' (Set.range (fun q:ℚ ↦ (q:ℝ)))) = 0 := by
+example {R:ℝ} (hR: 0 < R) : Lebesgue_outer_measure (Real.equiv_EuclideanSpace' '' (Set.range (fun q:ℚ ↦ (q:ℝ)))) = 0 := by
   sorry
 
 def LebesgueMeasurable {d:ℕ} (E: Set (EuclideanSpace' d)) : Prop :=
