@@ -164,7 +164,10 @@ theorem SetTheory.Set.eq_empty_iff_forall_notMem {X:Set} : X = ∅ ↔ (∀ x, x
   constructor
   · intro h x
     simp[SetTheory.Set.ext_iff] at *
-
+    -- tauto works but I want to how it works
+    simp[h]
+  · intro h
+    simpa[SetTheory.Set.ext_iff]
 
 
 
@@ -172,7 +175,45 @@ theorem SetTheory.Set.eq_empty_iff_forall_notMem {X:Set} : X = ∅ ↔ (∀ x, x
 
 /-- Empty set is unique -/
 theorem SetTheory.Set.empty_unique : ∃! (X:Set), ∀ x, x ∉ X := by
-  sorry
+  refine ⟨(∅ : Set), ?hEmpty, ?uniq⟩
+  -- ⊢ (fun X ↦ ∀ (x : Object), x ∉ X) ∅
+  -- ⊢ ∀ (y : Set), (fun X ↦ ∀ (x : Object), x ∉ X) y → y = ∅
+  -- We show that the empty set exists (which is trivial by the axiom)
+  -- We show that it is unique
+  · -- ⊢ (fun X ↦ ∀ (x : Object), x ∉ X) ∅
+    -- there  exists a function that sends the set X and the output is that for any object x, x is not the
+    intro x
+    apply not_mem_empty
+  · -- If `Y` has no elements, then `Y = ∅` by extensionality
+    -- ⊢ ∀ (y : Set), (fun X ↦ ∀ (x : Object), x ∉ X) y → y = ∅
+    -- for any
+    intro Y hY
+    apply SetTheory.Set.ext
+    intro x
+    constructor
+    · intro hx
+      exact False.elim (hY x hx)
+    · intro hxEmpty
+      exact False.elim ((SetTheory.Set.not_mem_empty x) hxEmpty)
+
+
+private theorem SetTheory.Set.empty_unique_com : ∃! (X:Set), ∀ x, x ∉ X := by
+  apply existsUnique_of_exists_of_unique
+
+-- inst✝ : SetTheory
+-- ⊢ ∃ x, ∀ (x_1 : Object), x_1 ∉ x
+-- case hunique
+-- inst✝ : SetTheory
+-- ⊢ ∀ (y₁ y₂ : Set), (∀ (x : Object), x ∉ y₁) → (∀ (x : Object), x ∉ y₂) → y₁ = y₂
+
+
+  . use SetTheory.emptyset
+    exact SetTheory.emptyset_mem
+  . intro x y hx hy
+    have hxz := eq_empty_iff_forall_notMem.mpr hx
+    have hyz := eq_empty_iff_forall_notMem.mpr hy
+    simp [hxz, hyz]
+
 
 /-- Lemma 3.1.5 (Single choice) -/
 lemma SetTheory.Set.nonempty_def {X:Set} (h: X ≠ ∅) : ∃ x, x ∈ X := by
@@ -235,10 +276,38 @@ theorem SetTheory.Set.mem_triple (x a b c:Object) : x ∈ ({a,b,c}:Set) ↔ (x =
   simp [Insert.insert, mem_union, mem_singleton]
 
 /-- Remark 3.1.9 -/
-theorem SetTheory.Set.singleton_uniq (a:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ x = a := by sorry
+theorem SetTheory.Set.singleton_uniq (a:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ x = a := by
+  --For some object a, There exists a unique set X such that for any object x that is a member of X iff x = a
+  -- Existence: take `X = {a}`.
+  refine ⟨({a} : Set), ?hX, ?uniq⟩
+  · -- Show `{a}` has exactly the elements equal to `a`.
+    intro x
+    simp[(SetTheory.Set.mem_singleton x a)]
+  · -- Uniqueness: any `Y` with the same membership characterization equals `{a}` by extensionality.
+    intro Y hY
+    apply SetTheory.Set.ext
+    intro x
+    have hy : x ∈ Y ↔ x = a := hY x
+    have hx : x ∈ ({a} : Set) ↔ x = a := SetTheory.Set.mem_singleton x a
+    -- Both sides characterize membership by `x = a`, so the sets are extensionally equal.
+    exact hy.trans hx.symm
+
+
+--https://github.com/gaearon/analysis-solutions/blob/solutions/analysis/Analysis/Section_3_1.lean
+
+private theorem SetTheory.Set.singleton_uniq_gaeron (a:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ x = a := by
+  apply existsUnique_of_exists_of_unique
+  · use {a}
+    intro x
+    apply mem_singleton
+  intro e1 e2 h1 h2
+  ext x
+  simp[h1 x, h2 x]
+
 
 /-- Remark 3.1.9 -/
-theorem SetTheory.Set.pair_uniq (a b:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ x = a ∨ x = b := by sorry
+theorem SetTheory.Set.pair_uniq (a b:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ x = a ∨ x = b := by
+sorry
 
 /-- Remark 3.1.9 -/
 theorem SetTheory.Set.pair_comm (a b:Object) : ({a,b}:Set) = {b,a} := by sorry

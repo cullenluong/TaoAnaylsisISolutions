@@ -78,7 +78,7 @@ theorem CantorSet.compact : IsCompact CantorSet := by
 theorem CantorSet.uncountable : Uncountable CantorSet := by
   sorry
 
-theorem CantorSet.null : IsNull (EuclideanSpace'.equiv_Real.symm '' CantorSet) := by sorry
+theorem CantorSet.null : IsNull (Real.equiv_EuclideanSpace' '' CantorSet) := by sorry
 
 /-- Exercise 1.2.10 ([0,1) is not the countable union of pairwise disjoint closed intervals)-/
 example : ¬ ∃ (I: ℕ → BoundedInterval), (∀ n, IsClosed (I n).toSet) ∧ (Set.univ.PairwiseDisjoint (fun n ↦ (I n).toSet) ) ∧ (⋃ n, (I n).toSet = Set.Ico 0 1) := by

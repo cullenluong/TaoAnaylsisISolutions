@@ -137,7 +137,7 @@ theorem BoundedInterval.toBox_inj {I J: BoundedInterval} : (I:Box 1) = (J:Box 1)
   exact this
 
 @[simp]
-theorem BoundedInterval.coe_of_box (I:BoundedInterval) : (I:Box 1).toSet = EuclideanSpace'.equiv_Real.symm '' I.toSet := by
+theorem BoundedInterval.coe_of_box (I:BoundedInterval) : (I:Box 1).toSet = Real.equiv_EuclideanSpace' '' I.toSet := by
   ext x
   simp [Box.toSet]; rw [Set.mem_pi]; constructor
   . intro h; use x 0; simp [h 0]
@@ -426,7 +426,7 @@ theorem Box.measure_uniq' {d:ℕ} {T₁ T₂: Finset (Box d)}
  sorry
 
 example :
-  let E : Set (EuclideanSpace' 1) := EuclideanSpace'.equiv_Real.symm '' ((Set.Ioo 1 2) ∪ (Set.Icc 3 6))
+  let E : Set (EuclideanSpace' 1) := Real.equiv_EuclideanSpace' '' ((Set.Ioo 1 2) ∪ (Set.Icc 3 6))
   ∃ hE : IsElementary E, hE.measure = 4 := by
   extract_lets E
   classical
