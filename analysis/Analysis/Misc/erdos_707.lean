@@ -5,25 +5,119 @@ import Mathlib
 /-- A perfect difference set is a set where every nonzero element is uniquely representable as a difference of two elements of the set. -/
 def IsPerfectDifferenceSet {N: ℕ} (B: Finset (ZMod N)) := ∀ d: ZMod N, d ≠ 0 → ∃! b: B × B, b.1.val - b.2.val = d
 
+def IsPerfectDifferenceSet.map {N: ℕ} (B: Finset (ZMod N)) (p: (B × B) ⊕ Unit) : ZMod N ⊕ B := match p with
+| Sum.inl p => if p.1 = p.2 then Sum.inr p.1 else Sum.inl (p.1.val - p.2.val)
+| Sum.inr _ => Sum.inl 0
+
+lemma IsPerfectDifferenceSet.card {N: ℕ} [NeZero N] {B: Finset (ZMod N)} (hdiff: IsPerfectDifferenceSet B) : B.card * B.card + 1 = N + B.card := by
+  have he : Function.Bijective (IsPerfectDifferenceSet.map B) := by
+    constructor
+    . intro p p' hpp'
+      rcases p with ⟨ x,y ⟩ | _ <;> rcases p' with ⟨ x',y' ⟩ | _ <;> simp_all [IsPerfectDifferenceSet.map]
+      . by_cases hxy : x = y <;> by_cases hx'y' : x' = y' <;> simp_all
+        have := (hdiff (x.val - y.val) (by grind)).unique (y₁ := ⟨ x,y ⟩) (y₂ := ⟨ x',y' ⟩)
+        grind
+      . by_cases hxy : x = y <;> grind
+      by_cases hxy' : x' = y' <;> grind
+    rintro (x | b)
+    . by_cases h : x = 0
+      . use Sum.inr Unit.unit
+        simp [IsPerfectDifferenceSet.map, h]
+      have := (hdiff x h).exists.choose_spec
+      set b := (hdiff x h).exists.choose
+      use Sum.inl b
+      have hb : b.1 ≠ b.2 := by grind
+      simp [IsPerfectDifferenceSet.map, hb, this]
+    use Sum.inl ⟨ b, b ⟩
+    simp [IsPerfectDifferenceSet.map]
+  replace he := Fintype.card_of_bijective he
+  simp [Fintype.card_sum] at he
+  convert he
+
+namespace Mainstep
 
 /-- We will show that the following hypotheses are inconsistent; this is the bulk of the proof of Theorem 8. -/
 class Hypotheses where
+  p : ℕ
+  hp : Nat.Prime p
   N : ℕ
-  hodd: Odd N
+  hN : N = p^2 + p + 1
   B: Finset (ZMod N)
   hdiff: IsPerfectDifferenceSet B
-  heven: Even B.card
-  h1: 1 ∈ B
-  h2: 2 ∈ B
-  h4: 4 ∈ B
-  h8: 8 ∈ B
-  h2_ne_1: (2: ZMod N) ≠ (1: ZMod N)
-  h4_ne_1: (4: ZMod N) ≠ (1: ZMod N)
-  h4_ne_8: (4: ZMod N) ≠ (8: ZMod N)
+  embed : ({1,2,4,8}: Finset ℕ) → B
+  h_embed : ∀ n, (embed n).val = n
+  h_inj : Function.Injective embed
 
-export Hypotheses (N hodd B hdiff heven h1 h2 h4 h8 h2_ne_1 h4_ne_1 h4_ne_8)
+export Hypotheses (p hp N  hN B hdiff embed h_embed h_inj)
 
 variable [Hypotheses]
+
+lemma h1 : 1 ∈ B := by
+  convert (embed ⟨ 1, by grind ⟩).property
+  simp [h_embed]
+
+lemma h2 : 2 ∈ B := by
+  convert (embed ⟨ 2, by grind ⟩).property
+  simp [h_embed]
+
+lemma h4 : 4 ∈ B := by
+  convert (embed ⟨ 4, by grind ⟩).property
+  simp [h_embed]
+
+lemma h8 : 8 ∈ B := by
+  convert (embed ⟨ 8, by grind ⟩).property
+  simp [h_embed]
+
+lemma h2_ne_1: (2: ZMod N) ≠ (1: ZMod N) := by
+  have : (embed ⟨ 2, by grind ⟩).val ≠ (embed ⟨ 1, by grind ⟩).val := by
+    rw [Subtype.coe_ne_coe]
+    by_contra!
+    replace := h_inj this
+    grind
+  convert this <;> simp [h_embed]
+
+lemma h4_ne_1: (4: ZMod N) ≠ (1: ZMod N) := by
+  have : (embed ⟨ 4, by grind ⟩).val ≠ (embed ⟨ 1, by grind ⟩).val := by
+    rw [Subtype.coe_ne_coe]
+    by_contra!
+    replace := h_inj this
+    grind
+  convert this <;> simp [h_embed]
+
+lemma h4_ne_8: (4: ZMod N) ≠ (8: ZMod N) := by
+  have : (embed ⟨ 4, by grind ⟩).val ≠ (embed ⟨ 8, by grind ⟩).val := by
+    rw [Subtype.coe_ne_coe]
+    by_contra!
+    replace := h_inj this
+    grind
+  convert this <;> simp [h_embed]
+
+lemma hodd : Odd N := by
+  rw [hN]
+  grind
+
+lemma card_B : B.card = p + 1 := by
+  have hnon : NeZero N := by rw [neZero_iff, hN]; grind
+  have := hdiff.card
+  have h1 := Finset.card_le_card_of_injective h_inj
+  simp at h1
+  replace : B.card * B.card = p^2 + p + B.card := by grind [hN]
+  replace : (B.card:ℤ) * B.card = p^2 + p + B.card := by grind
+  replace : ((B.card:ℤ) - (p + 1)) * (B.card + p) = 0 := by grind
+  rw [mul_eq_zero] at this
+  grind
+
+lemma odd_P : Odd p := by
+  apply Nat.Prime.odd_of_ne_two hp
+  by_contra!
+  replace := this ▸ card_B
+  have h1 := Finset.card_le_card_of_injective h_inj
+  simp at h1
+  grind
+
+lemma heven : Even B.card := by
+  rw [card_B]
+  grind [odd_P]
 
 lemma mul_two_inj {x y: ZMod N} (h: 2 * x = 2 * y) : x = y := by
   apply IsUnit.mul_left_cancel _ h
@@ -185,3 +279,5 @@ lemma contradiction : False := by
   rw [d1_eq_4] at this
   simp at this
   exact h4_ne_8 this
+
+end Mainstep

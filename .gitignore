@@ -11,3 +11,11 @@ _site/
 .DS_Store
 *.swp
 *.swo
+
+# AI assistant files
+.claude/
+.cursor/
+Claude.md
+
+# miscellaneous files
+analysis/Analysis/tobeIgnored/

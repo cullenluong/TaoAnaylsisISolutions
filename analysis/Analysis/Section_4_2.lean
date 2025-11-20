@@ -15,9 +15,9 @@ doing so.
 
 Main constructions and results of this section:
 
-- Definition of the "Section 4.2" rationals, `Section_4_2.Rat`, as formal differences `a // b` of
+- Definition of the "Section 4.2" rationals, `Section_4_2.Rat`, as formal quotients `a // b` of
   integers `a b:ℤ`, up to equivalence.  (This is a quotient of a scaffolding type
-  `Section_4_2.PreRat`, which consists of formal differences without any equivalence imposed.)
+  `Section_4_2.PreRat`, which consists of formal quotients without any equivalence imposed.)
 
 - Field operations and order on these rationals, as well as an embedding of ℕ and ℤ.
 
@@ -289,7 +289,7 @@ theorem Rat.not_gt_and_eq (x y:Rat) : ¬ (x > y ∧ x = y):= by sorry
 theorem Rat.not_lt_and_eq (x y:Rat) : ¬ (x < y ∧ x = y):= by sorry
 
 /-- Proposition 4.2.9(b) (order is anti-symmetric) / Exercise 4.2.5 -/
-theorem Rat.antisymm (x y:Rat) : x < y ↔ (y - x).isPos := by sorry
+theorem Rat.antisymm (x y:Rat) : x < y ↔ y > x := by sorry
 
 /-- Proposition 4.2.9(c) (order is transitive) / Exercise 4.2.5 -/
 theorem Rat.lt_trans {x y z:Rat} (hxy: x < y) (hyz: y < z) : x < z := by sorry
