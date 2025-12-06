@@ -537,19 +537,6 @@ theorem SetTheory.Set.ssubset_trans (A B C:Set) (hAB:A ⊂ B) (hBC:B ⊂ C) : A 
   have h:= subset_antisymm B C
   subst hAC
   simp_all only [subset_self, imp_false, not_true_eq_false]
-
-
-
-  have this: A⊆ C:=by
-    simp_all[ssubset_def]
-    obtain⟨haAB,hbAB⟩:=hAB
-    obtain⟨haBC,hbBC⟩:=hBC
-    exact Set.subset_trans haAB haBC
-
-
-
-
-
 /--
   This defines the subtype `A.toSubtype` for any `A:Set`.
   Note that `A.toSubtype` gives you a type, similar to how `Object` or `Set` are types.
