@@ -526,10 +526,21 @@ theorem SetTheory.Set.subset_antisymm (A B:Set) (hAB:A ⊆ B) (hBA:B ⊆ A) : A 
 
 /-- Proposition 3.1.17 (Partial ordering by set inclusion) -/
 theorem SetTheory.Set.ssubset_trans (A B C:Set) (hAB:A ⊂ B) (hBC:B ⊂ C) : A ⊂ C := by
-  simp_all[ssubset_def,subset_def]
-  obtain⟨haAB,hbAB⟩:=hAB
-  obtain⟨haBC,hbBC⟩:=hBC
-  rw[Set.ext_iff] at haAB
+  have this: A⊆ C:=by
+     simp_all[ssubset_def]
+     obtain⟨haAB,hbAB⟩:=hAB
+     obtain⟨haBC,hbBC⟩:=hBC
+     exact Set.subset_trans haAB haBC
+  simp_all  [ssubset_def]
+  by_contra hAC
+  simp[hAC] at hAB
+  have h:= subset_antisymm B C
+  subst hAC
+  simp_all only [subset_self, imp_false, not_true_eq_false]
+
+
+
+
 
 
 
@@ -709,9 +720,18 @@ theorem  SetTheory.Set.union_inter_distrib_left (A B C:Set) :
 
 /-- Proposition 3.1.27(f) -/
 theorem SetTheory.Set.union_compl {A X:Set} (hAX: A ⊆ X) : A ∪ (X \ A) = X := by
-  ext x
-  simp_all[subset_def,mem_union]
+  -- ext x
+  -- simp_all[subset_def,mem_union]
 
+  -- constructor
+  -- · intro h
+  --   cases h with
+  --   | inl h_1 => simp_all only
+  --   | inr h_2 => simp_all only
+  -- · intro h
+  ext x
+  simp only [ mem_union, mem_sdiff]
+  tauto
 
 /-- Proposition 3.1.27(f) -/
 theorem SetTheory.Set.inter_compl {A X:Set} : A ∩ (X \ A) = ∅ := by
@@ -722,12 +742,28 @@ theorem SetTheory.Set.inter_compl {A X:Set} : A ∩ (X \ A) = ∅ := by
 /-- Proposition 3.1.27(g) -/
 theorem SetTheory.Set.compl_union {A B X:Set} : X \ (A ∪ B) = (X \ A) ∩ (X \ B) := by
   ext x
-  simp_all[mem_inter]
-  constructor
-  · intro h
+  simp_all[mem_inter,mem_sdiff]
+  apply Iff.intro
+  · intro a
+    simp_all only [not_false_eq_true, and_self]
+  · intro a
+    simp_all only [not_false_eq_true, and_self]
+
 
 /-- Proposition 3.1.27(g) -/
-theorem SetTheory.Set.compl_inter {A B X:Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by sorry
+theorem SetTheory.Set.compl_inter {A B X:Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
+  ext x
+  simp_all[mem_sdiff,mem_inter,mem_union]
+  apply Iff.intro
+  · intro a
+    simp_all only [true_and]
+    obtain ⟨left, right⟩ := a
+    sorry
+  · intro a
+    cases a with
+    | inl h => simp_all only [IsEmpty.forall_iff, and_self]
+    | inr h_1 => simp_all only [not_false_eq_true, implies_true, and_self]
+
 
 /-- Not from textbook: sets form a distributive lattice. -/
 instance SetTheory.Set.instDistribLattice : DistribLattice Set where
@@ -737,12 +773,36 @@ instance SetTheory.Set.instDistribLattice : DistribLattice Set where
   le_antisymm := subset_antisymm
   inf := (· ∩ ·)
   sup := (· ∪ ·)
-  le_sup_left := by sorry
-  le_sup_right := by sorry
-  sup_le := by sorry
-  inf_le_left := by sorry
-  inf_le_right := by sorry
-  le_inf := by sorry
+  le_sup_left := by
+    intro A B
+    simp[subset_def,mem_union]
+    intro x h
+    tauto
+  le_sup_right := by
+    intro A B
+    simp[subset_def,mem_union]
+    intro x h
+    tauto
+  sup_le := by
+    intro A B C hac hbc
+    simp[mem_union,subset_def]
+    intro x h
+    cases h with
+    | inl h_1 =>
+      apply hac
+      simp_all only
+    | inr h_2 =>
+      apply hbc
+      simp_all only
+  inf_le_left := by
+    intro A B x h
+    simp_all only [mem_inter]
+  inf_le_right := by
+    intro A B x h
+    simp_all only [mem_inter]
+  le_inf := by
+    intro A B C hab hac
+    simp_all [subset_def,mem_inter]
   le_sup_inf := by
     intro X Y Z; change (X ∪ Y) ∩ (X ∪ Z) ⊆ X ∪ (Y ∩ Z)
     rw [←union_inter_distrib_left]
@@ -949,6 +1009,8 @@ theorem SetTheory.Set.subset_tfae (A B:Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A
     ext x
 
     simp_all[mem_inter]
+    intro h2
+
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_left (A B:Set) : A ∩ B ⊆ A := by
   sorry
