@@ -984,7 +984,15 @@ example : ({1, 2, 3, 4}:Set) \ {2,4,6} = {1, 3} := by
 
 /-- Example 3.1.30 -/
 example : ({3,5,9}:Set).replace (P := fun x y ↦ ∃ (n:ℕ), x.val = n ∧ y = (n+1:ℕ)) (by aesop)
-  = {4,6,10} := by sorry
+  = {4,6,10} := by
+  apply ext
+  intro x
+  simp[replacement_axiom]
+  constructor
+  · intro h
+    aesop
+    sorry
+  · sorry
 
 /-- Example 3.1.31 -/
 example : ({3,5,9}:Set).replace (P := fun _ y ↦ y=1) (by aesop) = {1} := by
@@ -1012,46 +1020,87 @@ theorem SetTheory.Set.subset_tfae (A B:Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_left (A B:Set) : A ∩ B ⊆ A := by
-  sorry
+  intro x h
+  simp_all only [mem_inter]
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_right (A B:Set) : A ∩ B ⊆ B := by
-  sorry
+  simp_all[subset_def,mem_inter]
 
 /-- Exercise 3.1.7 -/
 @[simp]
 theorem SetTheory.Set.subset_inter_iff (A B C:Set) : C ⊆ A ∩ B ↔ C ⊆ A ∧ C ⊆ B := by
-  sorry
+  simp[subset_def,mem_inter]
+  apply Iff.intro
+  · intro a
+    simp_all only [implies_true, and_self]
+  · intro a x a_1
+    simp_all only [and_self]
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.subset_union_left (A B:Set) : A ⊆ A ∪ B := by
-  sorry
+  simp[subset_def,mem_union]
+  intro x a
+  simp_all only [true_or]
 
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.subset_union_right (A B:Set) : B ⊆ A ∪ B := by
-  sorry
+  simp[subset_def,mem_union]
+  intro x a
+  simp_all only [or_true]
 
 /-- Exercise 3.1.7 -/
 @[simp]
 theorem SetTheory.Set.union_subset_iff (A B C:Set) : A ∪ B ⊆ C ↔ A ⊆ C ∧ B ⊆ C := by
-  sorry
+  simp[subset_def,mem_union]
+  apply Iff.intro
+  · intro a
+    simp_all only [true_or, implies_true, or_true, and_self]
+  · intro a x a_1
+    obtain ⟨left, right⟩ := a
+    cases a_1 with
+    | inl h => simp_all only
+    | inr h_1 => simp_all only
 
 /-- Exercise 3.1.8 -/
 @[simp]
-theorem SetTheory.Set.inter_union_cancel (A B:Set) : A ∩ (A ∪ B) = A := by sorry
-
+theorem SetTheory.Set.inter_union_cancel (A B:Set) : A ∩ (A ∪ B) = A := by
+  simp[Set.ext_iff,mem_inter,mem_union]
+  intro x a
+  simp_all only [true_or]
 /-- Exercise 3.1.8 -/
 @[simp]
-theorem SetTheory.Set.union_inter_cancel (A B:Set) : A ∪ (A ∩ B) = A := by sorry
+theorem SetTheory.Set.union_inter_cancel (A B:Set) : A ∪ (A ∩ B) = A := by
+  ext x
+  simp_all [mem_inter, mem_union]
+
 
 /-- Exercise 3.1.9 -/
 theorem SetTheory.Set.partition_left {A B X:Set} (h_union: A ∪ B = X) (h_inter: A ∩ B = ∅) :
-    A = X \ B := by sorry
+    A = X \ B := by
+    ext x
+    simp_all[Set.ext_iff,mem_union,mem_inter]
+    specialize h_union x
+    specialize h_inter x
+    apply Iff.intro
+    · intro a
+      simp_all only [or_false, true_iff, forall_const, not_false_eq_true, and_self]
+    · intro a
+      simp_all only [or_false, iff_true, not_false_eq_true, imp_self]
+
 
 /-- Exercise 3.1.9 -/
 theorem SetTheory.Set.partition_right {A B X:Set} (h_union: A ∪ B = X) (h_inter: A ∩ B = ∅) :
     B = X \ A := by
-  sorry
+  ext x
+  simp_all[Set.ext_iff,mem_union,mem_inter]
+  specialize h_union x
+  specialize h_inter x
+  apply Iff.intro
+  · intro a
+    simp_all only [or_true, true_iff, not_true_eq_false, imp_false, not_false_eq_true, and_self]
+  · intro a
+    simp_all only [false_or, iff_true, not_true_eq_false, implies_true]
 
 /--
   Exercise 3.1.10.
@@ -1074,7 +1123,10 @@ theorem SetTheory.Set.pairwise_disjoint (A B:Set) :
 
 /-- Exercise 3.1.10 -/
 theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by
-  sorry
+  ext x
+  simp_all[mem_union,mem_inter]
+  constructor
+  · intro h
 
 /--
   Exercise 3.1.11.
@@ -1082,11 +1134,22 @@ theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A �
   `Set.specification_axiom'`, or anything built from them (like differences and intersections).
 -/
 theorem SetTheory.Set.specification_from_replacement {A:Set} {P: A → Prop} :
-    ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by sorry
+    ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
+  let Q x y := P x ∧ x.val = y
+  have hQ : ∀ (x : A.toSubtype) (y y' : Object), Q x y ∧ Q x y' → y = y' := by aesop
+
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_union_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
-    A' ∪ B' ⊆ A ∪ B := by sorry
+    A' ∪ B' ⊆ A ∪ B := by
+    intro x h
+    simp_all only [mem_union,subset_def]
+    specialize hA'A x
+    specialize hB'B x
+    cases h with
+    | inl h_1 => simp_all only [forall_const, true_or]
+    | inr h_2 => simp_all only [forall_const, or_true]
+
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_inter_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
