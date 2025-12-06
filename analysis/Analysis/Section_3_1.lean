@@ -540,6 +540,11 @@ theorem SetTheory.Set.ssubset_trans (A B C:Set) (hAB:A ⊂ B) (hBC:B ⊂ C) : A 
 
 
 
+  have this: A⊆ C:=by
+    simp_all[ssubset_def]
+    obtain⟨haAB,hbAB⟩:=hAB
+    obtain⟨haBC,hbBC⟩:=hBC
+    exact Set.subset_trans haAB haBC
 
 
 
