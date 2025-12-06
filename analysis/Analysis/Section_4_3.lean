@@ -146,10 +146,12 @@ theorem close_mul_right {ε x y z:ℚ} (hxy: ε.Close x y) :
     (ε*|z|).Close (x * z) (y * z) := by sorry
 
 /-- Proposition 4.3.7(h) / Exercise 4.3.2 -/
-theorem close_mul_mul {ε δ x y z w:ℚ} (hε: ε ≥ 0) (hxy: ε.Close x y) (hzw: δ.Close z w) :
+theorem close_mul_mul {ε δ x y z w:ℚ} (hxy: ε.Close x y) (hzw: δ.Close z w) :
     (ε*|z|+δ*|x|+ε*δ).Close (x * z) (y * w) := by
   -- The proof is written to follow the structure of the original text, though
-  -- on formalization it was revealed that the hypothesis δ ≥ 0 was unnecessary.
+  -- non-negativity of ε and δ are implied and don't need to be provided as
+  -- explicit hypotheses.
+  have hε : ε ≥ 0 := le_trans (abs_nonneg _) hxy
   set a := y-x
   have ha : y = x + a := by grind
   have haε: |a| ≤ ε := by rwa [close_symm, close_iff] at hxy
