@@ -526,10 +526,16 @@ theorem SetTheory.Set.subset_antisymm (A B:Set) (hAB:A ⊆ B) (hBA:B ⊆ A) : A 
 
 /-- Proposition 3.1.17 (Partial ordering by set inclusion) -/
 theorem SetTheory.Set.ssubset_trans (A B C:Set) (hAB:A ⊂ B) (hBC:B ⊂ C) : A ⊂ C := by
-  simp_all[ssubset_def,subset_def]
-  obtain⟨haAB,hbAB⟩:=hAB
-  obtain⟨haBC,hbBC⟩:=hBC
-  rw[Set.ext_iff] at haAB
+
+
+
+  have this: A⊆ C:=by
+    simp_all[ssubset_def]
+    obtain⟨haAB,hbAB⟩:=hAB
+    obtain⟨haBC,hbBC⟩:=hBC
+    exact Set.subset_trans haAB haBC
+
+
 
 
 
@@ -949,6 +955,8 @@ theorem SetTheory.Set.subset_tfae (A B:Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A
     ext x
 
     simp_all[mem_inter]
+    intro h2
+
 /-- Exercise 3.1.7 -/
 theorem SetTheory.Set.inter_subset_left (A B:Set) : A ∩ B ⊆ A := by
   sorry
