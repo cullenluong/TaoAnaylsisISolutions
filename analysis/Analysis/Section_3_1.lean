@@ -1340,7 +1340,7 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
     -- Logic: For all B, if B ⊂ A, then B = ∅
     push_neg at h
 
-    -- Since A ≠ ∅, there exists some x ∈ A
+    -- make use of
     have ⟨x, hx⟩ := nonempty_def hA
     use x
 
@@ -1378,30 +1378,50 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
     obtain ⟨hB_sub, hB_ne⟩ := hB
 
     -- We assume B is not empty to derive a contradiction
-    by_contra h_nonempty
+    -- by_contra h_nonempty
 
-    -- If B is not empty, it contains some element y
-    obtain ⟨y, hy⟩ := nonempty_def h_nonempty
+    -- -- If B is not empty, it contains some element y
+    -- obtain ⟨y, hy⟩ := nonempty_def h_nonempty
 
-    -- Since B ⊆ {x}, y must be equal to x
-    have hy_eq : y = x := by
-      apply hB_sub at hy
-      rwa [mem_singleton] at hy
-    subst hy_eq
+    -- -- Since B ⊆ {x}, y must be equal to x
+    -- have hy_eq : y = x := by
+    --   apply hB_sub at hy
+    --   rwa [mem_singleton] at hy
+    -- subst hy_eq
 
-    -- Now we know x ∈ B. We can show {x} ⊆ B
-    have h_eq : {y} ⊆ B := by
+    -- -- Now we know x ∈ B. We can show {x} ⊆ B
+    -- have h_eq : {y} ⊆ B := by
+    --   intro z hz
+    --   rw [mem_singleton] at hz
+    --   subst hz
+    --   exact hy
+
+    -- -- If B ⊆ {x} and {x} ⊆ B, then B = {x}
+    -- have B_eq_x : B = {y} := subset_antisymm B {y} hB_sub h_eq
+
+    -- -- This contradicts the proper subset condition (B ≠ {x})
+    -- contradiction
+-- If y ∈ B, then y ∈ {x} (because B ⊆ {x})
+    rw [eq_empty_iff_forall_notMem]
+    intro y hy
+    have hy_in_x : y ∈ ({x}:Set) := hB_sub y hy
+    rw [mem_singleton] at hy_in_x
+
+    -- Therefore y must be x.
+    subst hy_in_x
+
+    -- If x ∈ B, then {x} ⊆ B.
+    have h_x_sub_B : ({y}:Set) ⊆ B := by
       intro z hz
       rw [mem_singleton] at hz
       subst hz
       exact hy
 
-    -- If B ⊆ {x} and {x} ⊆ B, then B = {x}
-    have B_eq_x : B = {y} := subset_antisymm B {y} hB_sub h_eq
+    -- We now have B ⊆ {x} and {x} ⊆ B. By antisymmetry, B = {x}.
+    have h_eq : B = {y} := subset_antisymm B {y} hB_sub h_x_sub_B
 
-    -- This contradicts the proper subset condition (B ≠ {x})
-    contradiction
-
+    -- This contradicts the strict subset condition (B ≠ {x}).
+    exact hB_ne h_eq
 
 /-
   Now we introduce connections between this notion of a set, and Mathlib's notion.
