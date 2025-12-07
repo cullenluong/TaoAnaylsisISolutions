@@ -778,16 +778,15 @@ theorem SetTheory.Set.compl_union {A B X:Set} : X \ (A ∪ B) = (X \ A) ∩ (X \
 theorem SetTheory.Set.compl_inter {A B X:Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
   ext x
   simp_all[mem_sdiff,mem_inter,mem_union]
-  tauto
-  -- apply Iff.intro
-  -- · intro a
-  --   simp_all only [true_and]
-  --   obtain ⟨left, right⟩ := a
-
-  -- · intro a
-  --   cases a with
-  --   | inl h => simp_all only [IsEmpty.forall_iff, and_self]
-  --   | inr h_1 => simp_all only [not_false_eq_true, implies_true, and_self]
+  apply Iff.intro
+  · intro a
+    simp_all only [true_and]
+    obtain ⟨left, right⟩ := a
+    sorry
+  · intro a
+    cases a with
+    | inl h => simp_all only [IsEmpty.forall_iff, and_self]
+    | inr h_1 => simp_all only [not_false_eq_true, implies_true, and_self]
 
 
 /-- Not from textbook: sets form a distributive lattice. -/
@@ -1323,15 +1322,10 @@ theorem SetTheory.Set.subset_diff_subset_counter :
   use {1}
   use ∅
   simp[subset_def]
-
-
-
 /-
   Final part of Exercise 3.1.12: state and prove a reasonable substitute positive result for the
   above theorem that involves set differences.
 -/
-
-/-- Exercise 3.1.13 -/
 
 -- Exercise 3.1.13 Euclid famously defined a point to be “that which has no part”. This exercise
 -- should be reminiscent of that definition. Define a proper subset of a set A to be a subset B of A
@@ -1361,10 +1355,9 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
     by_cases heq : {x} = A
     · symm; assumption
     · -- If {x} ≠ A, then {x} is a proper subset (since we already know {x} ⊆ A)
-
       have h_ssub : {x} ⊂ A := by
         rw [ssubset_def]
-        tauto
+        exact ⟨h_sub, heq⟩
 
       -- By our hypothesis h, since {x} ⊂ A, {x} must be empty
       specialize h {x} h_ssub
@@ -1380,11 +1373,7 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
     push_neg
     intro B hB
 
-
-
-
-    --hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
-
+    -- hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
     rw [ssubset_def] at hB
     obtain ⟨hB_sub, hB_ne⟩ := hB
 
@@ -1412,6 +1401,7 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
 
     -- This contradicts the proper subset condition (B ≠ {x})
     contradiction
+
 
 /-
   Now we introduce connections between this notion of a set, and Mathlib's notion.
