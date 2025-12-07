@@ -321,7 +321,25 @@ theorem SetTheory.Set.pair_uniq (a b:Object) : ∃! (X:Set), ∀ x, x ∈ X ↔ 
 
 /-- Remark 3.1.9 -/
 theorem SetTheory.Set.pair_comm (a b:Object) : ({a,b}:Set) = {b,a} := by
-  aesop?
+  ext x
+  simp_all only [mem_insert, mem_singleton]
+  apply Iff.intro
+  · intro hxab
+    cases hxab with
+    | inl hxa =>
+      subst hxa
+      simp_all only [or_true]
+    | inr hxb =>
+      subst hxb
+      simp_all only [true_or]
+  · intro hxba
+    cases hxba with
+    | inl hxb =>
+      subst hxb
+      simp_all only [or_true]
+    | inr hxa =>
+      subst hxa
+      simp_all only [true_or]
 
 /-- Remark 3.1.9 -/
 @[simp]
@@ -350,7 +368,7 @@ theorem SetTheory.Set.pair_eq_pair {a b c d:Object} (h: ({a,b}:Set) = {c,d}) :
     specialize h d
     simp only [ or_true, iff_true] at h
     exact h
-  tauto
+  aesop?
 abbrev SetTheory.Set.empty : Set := ∅
 abbrev SetTheory.Set.singleton_empty : Set := {(empty: Object)}
 abbrev SetTheory.Set.pair_empty : Set := {(empty: Object), (singleton_empty: Object)}
@@ -439,7 +457,12 @@ theorem SetTheory.Set.union_assoc (A B C:Set) : (A ∪ B) ∪ C = A ∪ (B ∪ C
     rw [mem_union]; tauto
   intro h
   simp_all[mem_union]
-  tauto
+  cases h with
+  | inl h_1 => simp_all only [true_or]
+  | inr h_2 =>
+    cases h_2 with
+    | inl h => simp_all only [or_true, true_or]
+    | inr h_1 => simp_all only [or_true]
 
 
 /-- Proposition 3.1.27(c) -/
@@ -711,6 +734,7 @@ theorem  SetTheory.Set.union_inter_distrib_left (A B C:Set) :
   aesop?
 
 /-- Proposition 3.1.27(f) -/
+
 theorem SetTheory.Set.union_compl {A X:Set} (hAX: A ⊆ X) : A ∪ (X \ A) = X := by
   -- ext x
   -- simp_all[subset_def,mem_union]
@@ -723,8 +747,16 @@ theorem SetTheory.Set.union_compl {A X:Set} (hAX: A ⊆ X) : A ∪ (X \ A) = X :
   -- · intro h
   ext x
   simp only [ mem_union, mem_sdiff]
-  tauto
 
+  by_cases h: x ∈ A
+  · constructor
+    · intro h2
+      --simp_all only [not_true_eq_false, and_false, or_false]
+      apply hAX
+      simp_all only
+    · intro h2
+      simp_all only [not_true_eq_false, and_false, or_false]
+  · simp_all only [not_false_eq_true, and_true, false_or]
 /-- Proposition 3.1.27(f) -/
 theorem SetTheory.Set.inter_compl {A X:Set} : A ∩ (X \ A) = ∅ := by
   ext x
@@ -746,15 +778,16 @@ theorem SetTheory.Set.compl_union {A B X:Set} : X \ (A ∪ B) = (X \ A) ∩ (X \
 theorem SetTheory.Set.compl_inter {A B X:Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
   ext x
   simp_all[mem_sdiff,mem_inter,mem_union]
-  apply Iff.intro
-  · intro a
-    simp_all only [true_and]
-    obtain ⟨left, right⟩ := a
-    sorry
-  · intro a
-    cases a with
-    | inl h => simp_all only [IsEmpty.forall_iff, and_self]
-    | inr h_1 => simp_all only [not_false_eq_true, implies_true, and_self]
+  tauto
+  -- apply Iff.intro
+  -- · intro a
+  --   simp_all only [true_and]
+  --   obtain ⟨left, right⟩ := a
+
+  -- · intro a
+  --   cases a with
+  --   | inl h => simp_all only [IsEmpty.forall_iff, and_self]
+  --   | inr h_1 => simp_all only [not_false_eq_true, implies_true, and_self]
 
 
 /-- Not from textbook: sets form a distributive lattice. -/
@@ -975,7 +1008,10 @@ example : ¬ Disjoint ({1, 2, 3}:Set) {2,3,4} := by
   rw [eq_empty_iff_forall_notMem] at h
   aesop
 
-example : Disjoint (∅:Set) ∅ := by sorry
+example : Disjoint (∅:Set) ∅ := by
+  simp only [disjoint_self]
+  tauto
+
 
 /-- Definition 3.1.26 example -/
 
@@ -985,14 +1021,13 @@ example : ({1, 2, 3, 4}:Set) \ {2,4,6} = {1, 3} := by
 /-- Example 3.1.30 -/
 example : ({3,5,9}:Set).replace (P := fun x y ↦ ∃ (n:ℕ), x.val = n ∧ y = (n+1:ℕ)) (by aesop)
   = {4,6,10} := by
-  apply ext
-  intro x
-  simp[replacement_axiom]
+  ext x
+  simp only [replacement_axiom]
   constructor
-  · intro h
+  · rintro ⟨a, ⟨x, ⟨hax, hxs⟩⟩⟩
     aesop
-    sorry
-  · sorry
+  aesop
+
 
 /-- Example 3.1.31 -/
 example : ({3,5,9}:Set).replace (P := fun _ y ↦ y=1) (by aesop) = {1} := by
@@ -1120,13 +1155,102 @@ theorem SetTheory.Set.pairwise_disjoint (A B:Set) :
     simp [disjoint_iff, Set.ext_iff]
     aesop
     -- 3. Solve the logical contradictions (e.g., x ∈ B ∧ x ∉ B).
+theorem SetTheory.Set.pairwise_disjoint2 (A B : Set) :
+    Pairwise (Function.onFun Disjoint ![A \ B, A ∩ B, B \ A]) := by
+  -- First prove the three basic disjointness statements between the pieces.
+  have h01 : Disjoint (A \ B) (A ∩ B) := by
+    rw [disjoint_iff]
+    apply eq_empty_iff_forall_notMem.mpr
+    intro x hx
+    -- x ∈ (A \ B) ∩ (A ∩ B)
+    have hx' : x ∈ A \ B ∧ x ∈ A ∩ B := by
+      simpa [mem_inter] using hx
+    rcases hx' with ⟨hxAB, hxAintB⟩
+    -- From x ∈ A \ B we get x ∈ A ∧ x ∉ B
+    have hxAB' : x ∈ A ∧ x ∉ B := by
+      simpa [mem_sdiff] using hxAB
+    -- From x ∈ A ∩ B we get x ∈ A ∧ x ∈ B
+    have hxAintB' : x ∈ A ∧ x ∈ B := by
+      simpa [mem_inter] using hxAintB
+    -- Contradiction: x ∉ B and x ∈ B
+    exact hxAB'.2 hxAintB'.2
+
+  have h02 : Disjoint (A \ B) (B \ A) := by
+    rw [disjoint_iff]
+    apply eq_empty_iff_forall_notMem.mpr
+    intro x hx
+    -- x ∈ (A \ B) ∩ (B \ A)
+    have hx' : x ∈ A \ B ∧ x ∈ B \ A := by
+      simpa [mem_inter] using hx
+    rcases hx' with ⟨hxAB, hxBA⟩
+    -- From x ∈ A \ B we get x ∈ A ∧ x ∉ B
+    have hxAB' : x ∈ A ∧ x ∉ B := by
+      simpa [mem_sdiff] using hxAB
+    -- From x ∈ B \ A we get x ∈ B ∧ x ∉ A
+    have hxBA' : x ∈ B ∧ x ∉ A := by
+      simpa [mem_sdiff] using hxBA
+    -- Contradiction: x ∉ A and x ∈ A
+    exact hxBA'.2 hxAB'.1
+
+  have h12 : Disjoint (A ∩ B) (B \ A) := by
+    rw [disjoint_iff]
+    apply eq_empty_iff_forall_notMem.mpr
+    intro x hx
+    -- x ∈ (A ∩ B) ∩ (B \ A)
+    have hx' : x ∈ A ∩ B ∧ x ∈ B \ A := by
+      simpa [mem_inter] using hx
+    rcases hx' with ⟨hxAintB, hxBA⟩
+    -- From x ∈ A ∩ B we get x ∈ A ∧ x ∈ B
+    have hxAintB' : x ∈ A ∧ x ∈ B := by
+      simpa [mem_inter] using hxAintB
+    -- From x ∈ B \ A we get x ∈ B ∧ x ∉ A
+    have hxBA' : x ∈ B ∧ x ∉ A := by
+      simpa [mem_sdiff] using hxBA
+    -- Contradiction: x ∉ A and x ∈ A
+    exact hxBA'.2 hxAintB'.1
+
+  -- Now use `fin_cases` to check all pairs of indices in `Fin 3`.
+  intro n m hnm
+  fin_cases n <;> fin_cases m
+  · -- n = 0, m = 0
+    -- Impossible because `Pairwise` assumes n ≠ m
+    cases hnm rfl
+  · -- n = 0, m = 1
+    -- This is Disjoint (A \ B) (A ∩ B)
+    simpa [Function.onFun_apply] using h01
+  · -- n = 0, m = 2
+    -- This is Disjoint (A \ B) (B \ A)
+    simpa [Function.onFun_apply] using h02
+  · -- n = 1, m = 0
+    -- This is Disjoint (A ∩ B) (A \ B), use symmetry of disjointness
+    simpa [Function.onFun_apply, disjoint_comm] using h01
+  · -- n = 1, m = 1
+    cases hnm rfl
+  · -- n = 1, m = 2
+    -- This is Disjoint (A ∩ B) (B \ A)
+    simpa [Function.onFun_apply] using h12
+  · -- n = 2, m = 0
+    -- This is Disjoint (B \ A) (A \ B)
+    simpa [Function.onFun_apply, disjoint_comm] using h02
+  · -- n = 2, m = 1
+    -- This is Disjoint (B \ A) (A ∩ B)
+    simpa [Function.onFun_apply, disjoint_comm] using h12
+  · -- n = 2, m = 2
+    cases hnm rfl
 
 /-- Exercise 3.1.10 -/
 theorem SetTheory.Set.union_eq_partition (A B:Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by
+  -- ext x
+  -- -- x is amember of the union of A and B iff
+  -- -- x is a member of the union of A \ B , A ∩ B and B \ a
+
+  -- by_cases ha: x ∈ A
+  -- constructor
   ext x
-  simp_all[mem_union,mem_inter]
-  constructor
-  · intro h
+  have : x ∈ A ∨ x ∉ A := by tauto
+  have : x ∉ B ∨ x ∈ B := by tauto
+  aesop
+
 
 /--
   Exercise 3.1.11.
@@ -1137,7 +1261,33 @@ theorem SetTheory.Set.specification_from_replacement {A:Set} {P: A → Prop} :
     ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
   let Q x y := P x ∧ x.val = y
   have hQ : ∀ (x : A.toSubtype) (y y' : Object), Q x y ∧ Q x y' → y = y' := by aesop
+  -- 3. Use the replacement axiom to construct the set B.
+  use A.replace hQ
+  constructor
 
+  -- 4. Prove B ⊆ A
+  · intro y hy
+    -- Apply the replacement axiom to unpack membership in B
+    rw [replacement_axiom] at hy
+    obtain ⟨x, _, rfl⟩ := hy
+    -- Since x comes from A (as a subtype), x.val is automatically in A
+    exact x.property
+
+  -- 5. Prove ∀ x, x.val ∈ B ↔ P x
+  · intro x
+    rw [replacement_axiom]
+    constructor
+    -- Forward direction: x.val ∈ B → P x
+    · rintro ⟨x', hPx', h_eq⟩
+      -- We have x'.val = x.val. By subtype injectivity, x' = x.
+      rw [coe_inj] at h_eq
+      subst h_eq
+      exact hPx'
+
+    -- Backward direction: P x → x.val ∈ B
+    · intro hPx
+      use x
+      -- We need to show Q x x.val, which is (P x ∧ x.val = x.val)
 
 /-- Exercise 3.1.12.-/
 theorem SetTheory.Set.subset_union_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
@@ -1152,12 +1302,29 @@ theorem SetTheory.Set.subset_union_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B
 
 
 /-- Exercise 3.1.12.-/
+-- Exercise 3.1.12 Suppose that A, B, A'
+-- , B' are sets such that A' ⊆ A and B' ⊆ B.
 theorem SetTheory.Set.subset_inter_subset {A B A' B':Set} (hA'A: A' ⊆ A) (hB'B: B' ⊆ B) :
-    A' ∩ B' ⊆ A ∩ B := by sorry
+    A' ∩ B' ⊆ A ∩ B := by
+    intro x h
+    simp_all only [mem_inter,subset_def]
+    tauto
 
 /-- Exercise 3.1.12.-/
+-- Give a counterexample to show that the statement A'\B' ⊆ A\B is false. Can you find a
+-- modification of this statement involving the set difference operation \ which is true given the
+-- stated hypotheses? Justify your answer.
+
+-- just show explicit example and simp takes care of the rest
 theorem SetTheory.Set.subset_diff_subset_counter :
-    ∃ (A B A' B':Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ¬ (A' \ B') ⊆ (A \ B) := by sorry
+    ∃ (A B A' B':Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ¬ (A' \ B') ⊆ (A \ B) := by
+  use {1}
+  use {1}
+  use {1}
+  use ∅
+  simp[subset_def]
+
+
 
 /-
   Final part of Exercise 3.1.12: state and prove a reasonable substitute positive result for the
@@ -1165,8 +1332,86 @@ theorem SetTheory.Set.subset_diff_subset_counter :
 -/
 
 /-- Exercise 3.1.13 -/
-theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by sorry
 
+-- Exercise 3.1.13 Euclid famously defined a point to be “that which has no part”. This exercise
+-- should be reminiscent of that definition. Define a proper subset of a set A to be a subset B of A
+-- with B ≠ A. Let A be a non-empty set. Show that A does not have any non-empty proper subsets
+-- if and only if A is of the form A = {x} for some object x.
+theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
+  --set A has the property there does not exist a set B that is a strict subset of A, and B is not the empty set
+  -- iff there exists an object x such that A is the singleton f
+
+  constructor
+  · intro h
+    -- Logic: For all B, if B ⊂ A, then B = ∅
+    push_neg at h
+
+    -- Since A ≠ ∅, there exists some x ∈ A
+    have ⟨x, hx⟩ := nonempty_def hA
+    use x
+
+    -- We know {x} ⊆ A
+    have h_sub : {x} ⊆ A := by
+      intro y hy
+      rw [mem_singleton] at hy
+      subst hy
+      exact hx
+
+    -- Case distinction: Either {x} = A (we are done) or {x} ≠ A
+    by_cases heq : {x} = A
+    · symm; assumption
+    · -- If {x} ≠ A, then {x} is a proper subset (since we already know {x} ⊆ A)
+
+      have h_ssub : {x} ⊂ A := by
+        rw [ssubset_def]
+        tauto
+
+      -- By our hypothesis h, since {x} ⊂ A, {x} must be empty
+      specialize h {x} h_ssub
+
+      -- But {x} is not empty (it contains x), so this is a contradiction
+      rw [eq_empty_iff_forall_notMem] at h
+      specialize h x
+      rw [mem_singleton] at h
+      contradiction
+
+  · -- Direction 2: If A = {x}, then it has no non-empty proper subsets
+    rintro ⟨x, rfl⟩
+    push_neg
+    intro B hB
+
+
+
+
+    --hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
+
+    rw [ssubset_def] at hB
+    obtain ⟨hB_sub, hB_ne⟩ := hB
+
+    -- We assume B is not empty to derive a contradiction
+    by_contra h_nonempty
+
+    -- If B is not empty, it contains some element y
+    obtain ⟨y, hy⟩ := nonempty_def h_nonempty
+
+    -- Since B ⊆ {x}, y must be equal to x
+    have hy_eq : y = x := by
+      apply hB_sub at hy
+      rwa [mem_singleton] at hy
+    subst hy_eq
+
+    -- Now we know x ∈ B. We can show {x} ⊆ B
+    have h_eq : {y} ⊆ B := by
+      intro z hz
+      rw [mem_singleton] at hz
+      subst hz
+      exact hy
+
+    -- If B ⊆ {x} and {x} ⊆ B, then B = {x}
+    have B_eq_x : B = {y} := subset_antisymm B {y} hB_sub h_eq
+
+    -- This contradicts the proper subset condition (B ≠ {x})
+    contradiction
 
 /-
   Now we introduce connections between this notion of a set, and Mathlib's notion.
@@ -1181,7 +1426,8 @@ instance SetTheory.Set.inst_coe_set : Coe Set (_root_.Set Object) where
 example (X: Set) : _root_.Set Object := X
 
 /--
-  Injectivity of the coercion. Note however that we do NOT assert that the coercion is surjective
+  Injectivity of
+  the coercion. Note however that we do NOT assert that the coercion is surjective
   (and indeed Russell's paradox prevents this)
 -/
 @[simp]
@@ -1197,14 +1443,33 @@ theorem SetTheory.Set.mem_coe (X:Set) (x:Object) : x ∈ (X : _root_.Set Object)
   simp
 
 /-- Compatibility of the emptyset -/
-theorem SetTheory.Set.coe_empty : ((∅:Set) : _root_.Set Object) = ∅ := by sorry
+theorem SetTheory.Set.coe_empty : ((∅:Set) : _root_.Set Object) = ∅ := by
+  simp only [not_mem_empty, Set.setOf_false]
 
 /-- Compatibility of subset -/
 theorem SetTheory.Set.coe_subset (X Y:Set) :
-    (X : _root_.Set Object) ⊆ (Y : _root_.Set Object) ↔ X ⊆ Y := by sorry
+    (X : _root_.Set Object) ⊆ (Y : _root_.Set Object) ↔ X ⊆ Y := by
+    simp only [Set.setOf_subset_setOf]
+    constructor
+    · intro h y hy
+      specialize h y
+      apply h at hy
+      exact hy
+    · intro h x hx
+      apply h
+      exact hx
 
+--https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Set/Basic.html
+-- look up built in mathlib set library and find the appropriate theorems
 theorem SetTheory.Set.coe_ssubset (X Y:Set) :
-    (X : _root_.Set Object) ⊂ (Y : _root_.Set Object) ↔ X ⊂ Y := by sorry
+    (X : _root_.Set Object) ⊂ (Y : _root_.Set Object) ↔ X ⊂ Y := by
+  simp only [Set.ssubset_iff_subset_ne]
+  simp_all only [Set.setOf_subset_setOf, ne_eq, coe_inj']
+  rfl
+
+
+
+
 
 /-- Compatibility of singleton -/
 theorem SetTheory.Set.coe_singleton (x: Object) : ({x} : _root_.Set Object) = {x} := by sorry
