@@ -228,6 +228,7 @@ theorem SetTheory.Set.empty_function_unique {X: Set} (f g: Function (∅:Set) X)
 
 
 
+
 /-- Definition 3.3.13 (Composition) -/
 noncomputable abbrev Function.comp {X Y Z: Set} (g: Function Y Z) (f: Function X Y) :
     Function X Z :=

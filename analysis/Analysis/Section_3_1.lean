@@ -1331,6 +1331,13 @@ theorem SetTheory.Set.subset_diff_subset_counter :
 -- should be reminiscent of that definition. Define a proper subset of a set A to be a subset B of A
 -- with B ≠ A. Let A be a non-empty set. Show that A does not have any non-empty proper subsets
 -- if and only if A is of the form A = {x} for some object x.
+
+-- we need to use the nonempty_def in order to form the statement
+-- of some arbitrary object that is a membero f the set
+-- because a set can be empty we, we can't automatically form the
+-- statement that a
+
+--
 theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
   --set A has the property there does not exist a set B that is a strict subset of A, and B is not the empty set
   -- iff there exists an object x such that A is the singleton f
@@ -1339,11 +1346,127 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
   · intro h
     -- Logic: For all B, if B ⊂ A, then B = ∅
     push_neg at h
-
-    -- make use of
+    --make use of the fact that A has at least one single element
     have ⟨x, hx⟩ := nonempty_def hA
     use x
 
+    --
+    have h_sub : {x} ⊆ A := by
+      intro y hy
+      rw [mem_singleton] at hy
+      subst hy
+      exact hx
+
+    by_contra heq
+    push_neg at heq
+     -- If {x} ≠ A, then {x} is a proper subset (since we already know {x} ⊆ A)
+    have h_ssub : {x} ⊂ A := by
+      rw [ssubset_def]
+      symm at heq
+      exact ⟨h_sub, heq⟩
+
+      -- By our hypothesis h, since {x} ⊂ A, {x} must be empty
+    specialize h {x} h_ssub
+
+      -- But {x} is not empty (it contains x), so this is a contradiction
+    rw [eq_empty_iff_forall_notMem] at h
+    specialize h x
+    rw [mem_singleton] at h
+    contradiction
+
+  · -- Direction 2: If A = {x}, then it has no non-empty proper subsets
+
+    intro hxA hBsA
+    obtain ⟨B,⟨hBsA,hneq_BA⟩,hB0⟩ :=hBsA
+    obtain ⟨x,hx⟩ :=hxA
+    have ⟨y, hy⟩ := nonempty_def hB0
+
+    subst hx
+    have hy_in_x : y ∈ ({x}:Set) := hBsA y hy
+    have h: ({x}:Set) ⊆  B:=by
+      intro z hz
+      rw[mem_singleton] at hz
+      subst hz
+      rw[mem_singleton] at hy_in_x
+      rw[hy_in_x] at hy
+      exact hy
+    rw[mem_singleton] at hy_in_x
+    subst hy_in_x
+    have hBy: B= {y}:= subset_antisymm B {y} hBsA h
+    contradiction
+
+
+
+
+
+
+    -- subst hx
+    -- simp[Set.ext_iff] at hx
+    -- specialize hx x
+
+
+    -- rw[eq_empty_iff_forall_notMem] at hA
+    -- push_neg at hA
+    -- obtain ⟨y,hy⟩:=hA
+
+
+    -- given that A is not the empty set prove that
+    -- if there exists an x such that A = {x}
+    -- then there does not exist B strict subset of A  and B is not the empty set
+
+    -- rintro ⟨x, rfl⟩
+    -- -- given that {x} is not the empty set we must now prove
+    -- -- that there does not exist a strict subset B of A, B is not
+
+    -- push_neg
+    -- -- logically equivalent that for any strict subset B
+    -- -- B is the empty set
+    -- intro B hB
+    -- -- hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
+    -- rw [ssubset_def] at hB
+    -- obtain ⟨hB_sub, hB_ne⟩ := hB
+
+
+
+
+-- -- If y ∈ B, then y ∈ {x} (because B ⊆ {x})
+
+
+    -- rw [eq_empty_iff_forall_notMem]
+    -- -- to prove B is the empty set we must prove that  any
+    -- --object is not a member of B
+    -- intro y hy
+    -- -- equivalently we assume that (we don't want to overload x )
+    -- --we assume y is indeed a member of B and derive a contradiction
+    -- have hy_in_x : y ∈ ({x}:Set) := hB_sub y hy
+    -- -- y is a member of {x} since y is a member of B
+    -- rw [mem_singleton] at hy_in_x
+
+    -- -- Therefore y must be x.
+    -- subst hy_in_x
+
+    -- -- If x ∈ B, then {x} ⊆ B.
+    -- have h_x_sub_B : ({y}:Set) ⊆ B := by
+    --   intro z hz
+    --   rw [mem_singleton] at hz
+    --   subst hz
+    --   exact hy
+
+    -- have h_eq : B = {y} := subset_antisymm B {y} hB_sub h_x_sub_B
+    -- exact hB_ne h_eq
+
+
+theorem SetTheory.Set.singleton_iff2 (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
+  --set A has the property there does not exist a set B that is a strict subset of A, and B is not the empty set
+  -- iff there exists an object x such that A is the singleton f
+
+  constructor
+  · intro h
+    -- Logic: For all B, if B ⊂ A, then B = ∅
+    push_neg at h
+    --make use of the fact that A has at least one single element
+    have ⟨x, hx⟩ := nonempty_def hA
+    use x
     -- We know {x} ⊆ A
     have h_sub : {x} ⊆ A := by
       intro y hy
@@ -1351,83 +1474,89 @@ theorem SetTheory.Set.singleton_iff (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B 
       subst hy
       exact hx
 
-    -- Case distinction: Either {x} = A (we are done) or {x} ≠ A
-    by_cases heq : {x} = A
-    · symm; assumption
-    · -- If {x} ≠ A, then {x} is a proper subset (since we already know {x} ⊆ A)
-      have h_ssub : {x} ⊂ A := by
-        rw [ssubset_def]
-        exact ⟨h_sub, heq⟩
+
+    by_contra heq
+    push_neg at heq
+     -- If {x} ≠ A, then {x} is a proper subset (since we already know {x} ⊆ A)
+    have h_ssub : {x} ⊂ A := by
+      rw [ssubset_def]
+      symm at heq
+      exact ⟨h_sub, heq⟩
 
       -- By our hypothesis h, since {x} ⊂ A, {x} must be empty
-      specialize h {x} h_ssub
+    specialize h {x} h_ssub
 
       -- But {x} is not empty (it contains x), so this is a contradiction
-      rw [eq_empty_iff_forall_notMem] at h
-      specialize h x
-      rw [mem_singleton] at h
-      contradiction
+    rw [eq_empty_iff_forall_notMem] at h
+    specialize h x
+    rw [mem_singleton] at h
+    contradiction
+  · rintro ⟨x, rfl⟩
+     -- given that {x} is not the empty set we must now prove
+     -- that there does not exist a strict subset B of A, B is not
 
-  · -- Direction 2: If A = {x}, then it has no non-empty proper subsets
-    rintro ⟨x, rfl⟩
     push_neg
+    -- -- logically equivalent that for any strict subset B
+    -- -- B is the empty set
     intro B hB
-
-    -- hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
+    -- -- hB states that B ⊂ {x}, which means B ⊆ {x} and B ≠ {x}
     rw [ssubset_def] at hB
     obtain ⟨hB_sub, hB_ne⟩ := hB
 
-    -- We assume B is not empty to derive a contradiction
-    -- by_contra h_nonempty
 
-    -- -- If B is not empty, it contains some element y
-    -- obtain ⟨y, hy⟩ := nonempty_def h_nonempty
+    by_contra h_nonempty
 
-    -- -- Since B ⊆ {x}, y must be equal to x
-    -- have hy_eq : y = x := by
-    --   apply hB_sub at hy
-    --   rwa [mem_singleton] at hy
-    -- subst hy_eq
+    -- If B is not empty, it contains some element y
+    obtain ⟨y, hy⟩ := nonempty_def h_nonempty
 
-    -- -- Now we know x ∈ B. We can show {x} ⊆ B
-    -- have h_eq : {y} ⊆ B := by
-    --   intro z hz
-    --   rw [mem_singleton] at hz
-    --   subst hz
-    --   exact hy
+    -- Since B ⊆ {x}, y must be equal to x
+    have hy_eq : y = x := by
+      apply hB_sub at hy
+      rwa [mem_singleton] at hy
+    subst hy_eq
 
-    -- -- If B ⊆ {x} and {x} ⊆ B, then B = {x}
-    -- have B_eq_x : B = {y} := subset_antisymm B {y} hB_sub h_eq
-
-    -- -- This contradicts the proper subset condition (B ≠ {x})
-    -- contradiction
--- If y ∈ B, then y ∈ {x} (because B ⊆ {x})
-    rw [eq_empty_iff_forall_notMem]
-    intro y hy
-    have hy_in_x : y ∈ ({x}:Set) := hB_sub y hy
-    rw [mem_singleton] at hy_in_x
-
-    -- Therefore y must be x.
-    subst hy_in_x
-
-    -- If x ∈ B, then {x} ⊆ B.
-    have h_x_sub_B : ({y}:Set) ⊆ B := by
+    -- Now we know x ∈ B. We can show {x} ⊆ B
+    have h_eq : {y} ⊆ B := by
       intro z hz
       rw [mem_singleton] at hz
       subst hz
       exact hy
 
-    -- We now have B ⊆ {x} and {x} ⊆ B. By antisymmetry, B = {x}.
-    have h_eq : B = {y} := subset_antisymm B {y} hB_sub h_x_sub_B
+    -- If B ⊆ {x} and {x} ⊆ B, then B = {x}
+    have B_eq_x : B = {y} := subset_antisymm B {y} hB_sub h_eq
 
-    -- This contradicts the strict subset condition (B ≠ {x}).
-    exact hB_ne h_eq
+    -- This contradicts the proper subset condition (B ≠ {x})
+    contradiction
+
+
+    -- rw [eq_empty_iff_forall_notMem]
+    --   -- to prove B is the empty set we must prove that  any
+    --   --object is not a member of B
+    -- intro y hy
+    --   -- equivalently we assume that (we don't want to overload x )
+    --   --we assume y is indeed a member of B and derive a contradiction
+    -- have hy_in_x : y ∈ ({x}:Set) := hB_sub y hy
+    --   -- y is a member of {x} since y is a member of B
+    -- rw [mem_singleton] at hy_in_x
+
+    --   -- Therefore y must be x.
+    -- subst hy_in_x
+
+    --   -- If x ∈ B, then {x} ⊆ B.
+    -- have h_x_sub_B : ({y}:Set) ⊆ B := by
+    --     intro z hz
+    --     rw [mem_singleton] at hz
+    --     subst hz
+    --     exact hy
+
+    -- have h_eq : B = {y} := subset_antisymm B {y} hB_sub h_x_sub_B
+    -- exact hB_ne h_eq
+
 
 /-
   Now we introduce connections between this notion of a set, and Mathlib's notion.
   The exercise below will acquiant you with the API for Mathlib's sets.
 -/
-
 instance SetTheory.Set.inst_coe_set : Coe Set (_root_.Set Object) where
   coe X := { x | x ∈ X }
 
