@@ -782,7 +782,10 @@ theorem SetTheory.Set.compl_inter {A B X:Set} : X \ (A ∩ B) = (X \ A) ∪ (X \
   · intro a
     simp_all only [true_and]
     obtain ⟨left, right⟩ := a
-    sorry
+    by_cases h: x ∈ A
+    · apply right at h
+      tauto
+    · tauto
   · intro a
     cases a with
     | inl h => simp_all only [IsEmpty.forall_iff, and_self]
@@ -1482,6 +1485,17 @@ theorem SetTheory.Set.singleton_iff2 (A:Set) (hA: A ≠ ∅) : (¬∃ B ⊂ A, B
       rw [ssubset_def]
       symm at heq
       exact ⟨h_sub, heq⟩
+
+    have h2: A ≠ {x} → ∃ y, y ∈ A ∧   y ≠ x:=by
+      intro h2
+      simp [Set.ext_iff] at h2
+      push_neg at h2
+      obtain ⟨y,⟨hyA,hyx⟩⟩:=h2
+      --simp_all only [ne_eq]
+      use y
+      aesop
+    have hy:= h2 heq
+    obtain ⟨y,⟨hy,hyx⟩⟩:=hy
 
       -- By our hypothesis h, since {x} ⊂ A, {x} must be empty
     specialize h {x} h_ssub
