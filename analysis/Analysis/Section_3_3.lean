@@ -614,8 +614,14 @@ theorem Function.comp_cancel_right {X Y Z:Set} {f: Function X Y} {g g': Function
 
 def Function.comp_cancel_left_without_hg : Decidable (∀ (X Y Z:Set) (f f': Function X Y) (g : Function Y Z) (heq : g ○ f = g ○ f'), f = f') := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  apply isFalse
-  push_neg
+  apply isTrue
+  intro X Y Z f f' g heq
+  ext x y
+  rw[Function.ext_iff] at heq
+  have xx := x.property
+
+
+
 
 def Function.comp_cancel_right_without_hg : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g g': Function Y Z) (heq : g ○ f = g' ○ f), g = g') := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
