@@ -556,7 +556,7 @@ theorem Function.comp_cancel_left {X Y Z:Set} {f f': Function X Y} {g : Function
   --rw[one_to_one] at hg
   rw [Function.eq_iff] at heq
 
-  --hg takes into the two functions f f' y and dsays
+  --hg takes into the two functions f f' y and says
   have this:= hg (f x) (f' x)
   have he :  g.to_fn (f.to_fn x) = g.to_fn (f'.to_fn x) →  f.to_fn x = f'.to_fn x   :=by  tauto
   constructor
@@ -611,30 +611,119 @@ theorem Function.comp_cancel_right {X Y Z:Set} {f: Function X Y} {g g': Function
     exact heq
 
 
+--this is false since g is x^2 a noniinjective function over reals
+-- then we can have f(x) = x and f'(x) = -x
 
 def Function.comp_cancel_left_without_hg : Decidable (∀ (X Y Z:Set) (f f': Function X Y) (g : Function Y Z) (heq : g ○ f = g ○ f'), f = f') := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  apply isTrue
-  intro X Y Z f f' g heq
-  ext x y
-  rw[Function.ext_iff] at heq
-  have xx := x.property
+  apply isFalse
+  intro h
+  let X:= Nat
+  let Y:= Nat
+  let Z:= Nat
+  -- f maps everything to 0
+  let f : Function X Y := Function.mk_fn (fun _ ↦ (0:Nat))
+  -- f' maps everything to 1
+  let f' : Function X Y := Function.mk_fn (fun _ ↦ (1:Nat))
+  -- g maps everything to 0 (The non-injective function)
+  let g : Function Y Z := Function.mk_fn (fun _ ↦ (0:Nat))
+-- 2. Prove that g ○ f = g ○ f'
+  have composition_eq : g ○ f = g ○ f' := by
+    -- Two functions are equal if they agree on all inputs
+    rw [Function.eq_iff]
+    intro x
+    -- Simplify using the definition of composition and our specific functions
+    -- g(f(x)) = g(0) = 0 and g(f'(x)) = g(1) = 0
+    simp only [Function.eval_of]
+    aesop
+  specialize h X Y Z f f' g composition_eq
+-- 4. Prove that f ≠ f' to show contradiction
+  have f_neq_f' : f ≠ f' := by
+    intro heq
+    rw [Function.eq_iff] at heq
+    -- Check the value at 0
+    specialize heq (0:Nat)
+    -- f(0) = 0 and f'(0) = 1
+
+    simp  [f,f',Function.eval_of] at heq
+    simp_all only [SetTheory.Set.ofNat_inj, zero_ne_one, X, Z, Y, g, f, f']
+
+    -- This results in 0 = 1, which is a contradiction
+
+  -- 5. Final contradiction
+  contradiction
 
 
 
 
+
+-- f = n^2  let g = n and g'(x) = |n| over all naturals
+-- g(f(x)) = |x| and g'(f(x)) = |x|
+-- let f = n^2
+-- let g = n
+-- let g'= |n|
 def Function.comp_cancel_right_without_hg : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g g': Function Y Z) (heq : g ○ f = g' ○ f), g = g') := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  sorry
+  apply isFalse
+  intro h
+  let X:= Nat
+  let Y:= Nat
+  let Z:= Nat
+  let f : Function X Y := Function.mk_fn (fun _ ↦ (0:Nat))
+  let g : Function Y Z := Function.mk_fn (fun _ ↦ (0:Nat))
+  let g' : Function Y Z := Function.mk_fn (fun (y:Nat) ↦ if (y:ℕ) = 0 then (0:Nat) else (1:Nat))
+  have composition_eq : g ○ f = g' ○ f := by
+    rw [Function.eq_iff]
+    intro x
+    -- Unfold definitions
+    simp only [Function.eval_of]
+    -- Left side: g(f(x)) -> g(0) -> 0
+    -- Right side: g'(f(x)) -> g'(0).
+    -- Since f(x) is always 0, the 'if' condition in g' is always true.
+    simp only [mk.injEq] at h
+    simp_all only [eval_of, SetTheory.Set.nat_equiv_coe_of_coe'', ↓reduceIte, Z, Y, g, X, f, g']
+  specialize h X Y Z f g g' composition_eq
+  have g_neq_g' : g ≠ g' := by
+    intro heq
+    rw [Function.eq_iff] at heq
+    -- Check the value at 1 (which f never touches)
+    specialize heq (1:Nat)
+    simp_all only [mk.injEq, eval_of, SetTheory.Set.nat_equiv_coe_of_coe'', ↓reduceIte, one_ne_zero,
+      SetTheory.Set.ofNat_inj, zero_ne_one, X, Z, Y, g, f, g']
+  contradiction
 
+    -- g(1) is 0.
+    -- g'(1) checks `if 1 = 0`. This is false, so it returns 1.
+    -- We are left with 0 = 1, a contradiction.
 /--
   Exercise 3.3.5.
 -/
 theorem Function.comp_injective {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hinj :
-    (g ○ f).one_to_one) : f.one_to_one := by sorry
+    (g ○ f).one_to_one) : f.one_to_one := by
+    simp_all only [Function.one_to_one_iff]
+    simp_all only [eval_of, Subtype.forall]
+    intro x hx x' hx' h
+    --simp_all only [Subtype.mk.injEq]
+    specialize hinj x hx x' hx'
+    rw[h] at hinj
+    simp_all only [Subtype.mk.injEq, forall_const]
+
 
 theorem Function.comp_surjective {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hsurj :
-    (g ○ f).onto) : g.onto := by sorry
+    (g ○ f).onto) : g.onto := by
+    simp_all only [Function.onto]
+    intro hz
+    specialize hsurj hz
+
+    simp_all only [eval_of, Subtype.exists]
+    obtain ⟨val, property⟩ := hz
+    obtain ⟨w, h⟩ := hsurj
+    obtain ⟨w_1, h⟩ := h
+    apply Exists.intro
+    · apply Exists.intro
+      · exact h
+  --simp[Function.comp] at hsurj
+
 
 def Function.comp_injective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g : Function Y Z) (hinj :
     (g ○ f).one_to_one), g.one_to_one) := by
