@@ -348,3 +348,54 @@ lemma EReal.coe_tsum_of_nonneg {g : ℕ → ℝ} (hg_nn : ∀ n, 0 ≤ g n) (hg_
         }
         exact (Summable.map_tsum (f := g') ENNReal.summable φ continuous_coe_ennreal_ereal).symm
   rw [h_lhs, h_rhs]
+<<<<<<< HEAD
+=======
+
+/-- If all partial sums of a nonnegative EReal sequence are bounded by M, then the tsum is bounded by M.
+    This is a generalization of `ENNReal.tsum_le_of_sum_range_le` to EReal. -/
+lemma EReal.tsum_le_of_sum_range_le_of_nonneg {f : ℕ → EReal} {M : EReal}
+    (h_nn : ∀ n, 0 ≤ f n) (h : ∀ N : ℕ, ∑ n ∈ Finset.range N, f n ≤ M) :
+    ∑' n, f n ≤ M := by
+  -- Convert to ENNReal where tsum_le_of_sum_range_le is available
+  let g : ℕ → ENNReal := fun n => (f n).toENNReal
+  -- Show f n = (g n : EReal) for nonneg f n
+  have hf_eq : ∀ n, f n = (g n : EReal) := fun n => by
+    simp only [g]
+    exact (EReal.coe_toENNReal (h_nn n)).symm
+  -- Rewrite tsum using term equality
+  have h_tsum_eq : ∑' n, f n = (∑' n, g n : ENNReal).toEReal := by
+    have h1 : ∑' n, f n = ∑' n, (g n : EReal) := tsum_congr hf_eq
+    have h2 : ∑' n, (g n : EReal) = (∑' n, g n : ENNReal).toEReal := by
+      let φ : ENNReal →+ EReal := {
+        toFun := (↑·)
+        map_zero' := by simp
+        map_add' := EReal.coe_ennreal_add
+      }
+      have h_map : φ (∑' n, g n) = ∑' n, φ (g n) :=
+        Summable.map_tsum (f := g) ENNReal.summable φ continuous_coe_ennreal_ereal
+      exact h_map.symm
+    exact h1.trans h2
+  rw [h_tsum_eq]
+  -- If M = ⊤, trivially true
+  by_cases hM : M = ⊤
+  · rw [hM]; exact le_top
+  -- M ≥ 0 since it bounds nonneg partial sums
+  have hM_nn : 0 ≤ M := by
+    have h0 : (∑ i ∈ Finset.range 0, f i) ≤ M := h 0
+    simp at h0; exact h0
+  -- Get partial sum bounds in ENNReal
+  have h_enn : ∀ N, ∑ i ∈ Finset.range N, g i ≤ M.toENNReal := by
+    intro N
+    have h_sum_eq : (∑ i ∈ Finset.range N, g i : ENNReal).toEReal = (∑ i ∈ Finset.range N, f i) := by
+      rw [EReal.coe_ennreal_finset_sum]
+      exact Finset.sum_congr rfl (fun n _ => (hf_eq n).symm)
+    have h_le : (∑ i ∈ Finset.range N, g i : ENNReal).toEReal ≤ M := by rw [h_sum_eq]; exact h N
+    rw [← EReal.coe_toENNReal hM_nn] at h_le
+    exact EReal.coe_ennreal_le_coe_ennreal_iff.mp h_le
+  have h_tsum_enn : ∑' n, g n ≤ M.toENNReal := ENNReal.tsum_le_of_sum_range_le h_enn
+  -- Convert back: ↑(∑' g) ≤ ↑(M.toENNReal) and M.toENNReal.toEReal = M (when 0 ≤ M)
+  have h_coe_le : (∑' n, g n : ENNReal).toEReal ≤ (M.toENNReal).toEReal :=
+    EReal.coe_ennreal_le_coe_ennreal_iff.mpr h_tsum_enn
+  calc (∑' n, g n : ENNReal).toEReal ≤ (M.toENNReal).toEReal := h_coe_le
+    _ = M := EReal.coe_toENNReal hM_nn
+>>>>>>> Upstream/main

@@ -288,7 +288,7 @@ theorem Real.LIM_mono_fail :
   sorry
 
 /-- Proposition 5.4.12 (Bounding reals by rationals) -/
-theorem Real.exists_rat_le_and_nat_ge {x:Real} (hx: x.IsPos) :
+theorem Real.exists_rat_le_and_nat_gt {x:Real} (hx: x.IsPos) :
     (∃ q:ℚ, q > 0 ∧ (q:Real) ≤ x) ∧ ∃ N:ℕ, x < (N:Real) := by
   -- This proof is written to follow the structure of the original text.
   rw [isPos_def] at hx; choose a hbound hcauchy heq using hx
@@ -314,7 +314,7 @@ theorem Real.le_mul {ε:Real} (hε: ε.IsPos) (x:Real) : ∃ M:ℕ, M > 0 ∧ M 
   -- This proof is written to follow the structure of the original text.
   obtain rfl | hx | hx := trichotomous x
   . use 1; simpa [isPos_iff] using hε
-  . choose N hN using (exists_rat_le_and_nat_ge (div_of_pos hx hε)).2
+  . choose N hN using (exists_rat_le_and_nat_gt (div_of_pos hx hε)).2
     set M := N+1; refine ⟨ M, by positivity, ?_ ⟩
     replace hN : x/ε < M := hN.trans (by simp [M])
     simp

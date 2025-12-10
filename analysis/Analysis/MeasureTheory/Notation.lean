@@ -36,6 +36,9 @@ abbrev Real.equiv_EuclideanSpace' : ℝ ≃ EuclideanSpace' 1 := EuclideanSpace'
 
 instance EuclideanSpace'.inst_coeReal : Coe ℝ (EuclideanSpace' 1) := ⟨Real.equiv_EuclideanSpace'⟩
 
+abbrev EuclideanSpace'.toReal (x: EuclideanSpace' 1) : ℝ := EuclideanSpace'.equiv_Real x
+abbrev Real.toEuclideanSpace' (x: ℝ) : EuclideanSpace' 1 := Real.equiv_EuclideanSpace' x
+
 theorem EuclideanSpace'.norm_eq {n:ℕ} (x: EuclideanSpace' n) : ‖x‖ = √(∑ i, (x i)^2) := by
   convert EuclideanSpace.norm_eq x using 3 with i
   simp

@@ -28,8 +28,13 @@ Some of the material in this text is duplicated in Lean's standard math library 
     - Section 1.3.2: Measurable functions ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_2.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_2.lean))
     - Section 1.3.3: Unsigned Lebesgue integrals ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_3.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_3.lean))
 <<<<<<< HEAD
+<<<<<<< HEAD
     - Section 1.3.4: Absolute integrability (Documentation) (Lean source)
     - Section 1.3.5: Littlewood's three principles (Documentation) (Lean source)
+=======
+    - Section 1.3.4: Absolute integrability ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_4.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_4.lean))
+    - Section 1.3.5: Littlewood's three principles ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_5.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_5.lean))
+>>>>>>> Upstream/main
 =======
     - Section 1.3.4: Absolute integrability ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_4.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_4.lean))
     - Section 1.3.5: Littlewood's three principles ([Documentation](https://teorth.github.io/analysis/docs/Analysis/MeasureTheory/Section_1_3_5.html)) ([Lean source](https://github.com/teorth/analysis/blob/main/analysis/Analysis/MeasureTheory/Section_1_3_5.lean))
