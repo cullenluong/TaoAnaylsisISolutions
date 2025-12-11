@@ -551,12 +551,7 @@ theorem empty_function_bijective_iff (X: Set) (f: Function ∅ X) : f.bijective 
 theorem Function.comp_cancel_left {X Y Z:Set} {f f': Function X Y} {g : Function Y Z}
   (heq : g ○ f = g ○ f') (hg: g.one_to_one) : f = f' := by
   ext x y
-  --abbrev Function.one_to_one {X Y: Set} (f: Function X Y) : Prop := ∀ x x': X, x ≠ x' → f x ≠ f x'
-  --have this:= hg  y y
-  --rw[one_to_one] at hg
   rw [Function.eq_iff] at heq
-
-  --hg takes into the two functions f f' y and says
   have this:= hg (f x) (f' x)
   have he :  g.to_fn (f.to_fn x) = g.to_fn (f'.to_fn x) →  f.to_fn x = f'.to_fn x   :=by  tauto
   constructor
@@ -662,6 +657,7 @@ def Function.comp_cancel_left_without_hg : Decidable (∀ (X Y Z:Set) (f f': Fun
 -- let f = n^2
 -- let g = n
 -- let g'= |n|
+set_option linter.unusedVariables false
 def Function.comp_cancel_right_without_hg : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g g': Function Y Z) (heq : g ○ f = g' ○ f), g = g') := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
   apply isFalse
@@ -725,15 +721,64 @@ theorem Function.comp_surjective {X Y Z:Set} {f: Function X Y} {g : Function Y Z
   --simp[Function.comp] at hsurj
 
 
+
+--  g(f(n)) = n
+--  g(0) = 0, g(n)=n-1 for n > 0
+-- f(n) = n+1
+
 def Function.comp_injective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g : Function Y Z) (hinj :
     (g ○ f).one_to_one), g.one_to_one) := by
-  -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  sorry
+  apply isFalse
+  intro h
+  let X:= Nat
+  let Y:= Nat
+  let Z:= Nat
 
+  let f : Function X Y := Function.mk_fn (fun (n:Nat) ↦ ((n:ℕ) + 1 : ℕ))
+  let g : Function Y Z := Function.mk_fn (fun (n:Nat) ↦ ((n:ℕ)-1:ℕ) )
+-- 1. Prove that g ○ f is injective (It behaves like the identity function)
+  have h_comp_inj : (g ○ f).one_to_one := by
+    rw [Function.one_to_one_iff]
+    intro x y heq
+    simp only [Function.comp_eval] at heq
+    -- On ℕ, (n + 1) - 1 simplifies to n automatically via Nat.add_sub_cancel
+    aesop
+  specialize h X Y Z f g h_comp_inj
+-- 3. Show g is NOT injective to derive a contradiction
+  have g_not_inj : ¬ g.one_to_one := by
+    rw [Function.one_to_one_iff]
+    push_neg
+    -- We use 0 and 1 as the counterexample inputs
+    use (0:Nat), (1:Nat)
+    aesop?
+  contradiction
+
+
+
+--f(n) = n + 1 nonsurjective injective counter example output misses 0
+-- g(f(n)) = 0 , g(f(n)) = n-1 for f(n) > 0 is surjective
+-- g(1) = 0 g(0) = 0 g(n) = n-2
 def Function.comp_surjective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g : Function Y Z) (hsurj :
     (g ○ f).onto), f.onto) := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  sorry
+  apply isTrue
+  intro X Y Z f g hgf
+  simp_all only [Function.onto]
+  intro y
+  have z:= g y
+
+  specialize hgf z
+  obtain ⟨x,hx⟩:=hgf
+  use x
+  have y':= f x
+
+  simp[Function.comp] at hx
+
+
+  --simp[Function.to_fn]
+
+
+
 
 /-- Exercise 3.3.6 -/
 theorem Function.inverse_comp_self {X Y: Set} {f: Function X Y} (h: f.bijective) (x: X) :
