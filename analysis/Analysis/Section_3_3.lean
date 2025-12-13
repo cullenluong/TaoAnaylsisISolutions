@@ -758,25 +758,133 @@ def Function.comp_injective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g :
 --f(n) = n + 1 nonsurjective injective counter example output misses 0
 -- g(f(n)) = 0 , g(f(n)) = n-1 for f(n) > 0 is surjective
 -- g(1) = 0 g(0) = 0 g(n) = n-2
+
+-- could also try X = [0,1] , Y = [0,1,2] Z = [0,1]
+-- f = 0 -> 1, 1->2
+-- g = 0 -> 0, 1 -> 1, 2 -> 0
+-- g(f(n)) = 0 -> 1, 1->0, is surjective
+
+        -- simp only [g]
+        -- rw[Function.eval_of]
+        -- simp only [g] at hg0_eval
 def Function.comp_surjective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g : Function Y Z) (hsurj :
     (g ○ f).onto), f.onto) := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`.
-  apply isTrue
-  intro X Y Z f g hgf
-  simp_all only [Function.onto]
-  intro y
-  have z:= g y
+  apply isFalse
+  intro h
+  let X:= Nat
 
-  specialize hgf z
-  obtain ⟨x,hx⟩:=hgf
-  use x
-  have y':= f x
-
-  simp[Function.comp] at hx
+  let Y:= Nat
+  let Z:= Nat
+  let f : Function X Y := Function.mk_fn (fun (n:Nat) ↦ ((n:ℕ) + 1 : ℕ))
+  let g : Function Y Z := Function.mk_fn (fun (n:Nat) ↦ (if (n:ℕ) = 0 then (0:Nat) else if (n:ℕ) = 1 then (0:Nat) else (n:ℕ)-2:ℕ) )
 
 
-  --simp[Function.to_fn]
+  have f_nsurj : ¬ f.onto := by
+    -- unfold "onto" and push the negation in
+    simp only [Function.onto]
+    push_neg
+    --refine ⟨0, ?_⟩
+    use 0
+    intro x
+    simp only [Function.eval_of, f]
+    intro h
+    have h' := congrArg SetTheory.Set.nat_equiv.symm h
+    have h'' : SetTheory.Set.nat_equiv.symm x + 1 ≠  0 := by simp
+    rw[SetTheory.Set.nat_equiv_coe_of_coe] at h'
+    rw[← SetTheory.Set.nat_equiv_coe_of_coe 0] at h''
+    contradiction
 
+
+  have hgf_surj: (g○f).onto :=by
+    simp_all only [Function.onto]
+    intro z
+    specialize h X Y Z f g
+    let  hg:= g (z+2:ℕ)
+    use (z+2:ℕ)
+    simp only [eval_of]
+    -- for all y: there exists an x Z,
+    -- for all x
+    have hgfx: (∀ (y : Z.toSubtype), ∃ x, (g○f).to_fn x = y) :=by
+      intro z
+      use (z:Nat )
+
+      by_cases hz:z = (0:Nat)
+      · subst hz
+        simp[Function.eval_of]
+        rw[← Function.to_fn_eval]
+        let hh:= Function.eval f (0:ℕ)
+        specialize hh (0:ℕ)
+        have hf0_eval : f (0 : Nat) = (1 : ℕ ) := by
+            simp only [f]              -- 1. Reveal the definition of f
+            rw [Function.eval_of]      -- 2. Convert abstract Function application to concrete logic
+            simp only [SetTheory.Set.nat_equiv_coe_of_coe'']
+        rw[hf0_eval]
+        have hg0_eval : g (1 : Nat) = (0 : ℕ ) := by
+            simp only [g]
+            rw[Function.eval_of]
+            simp only [SetTheory.Set.nat_equiv_coe_of_coe'', one_ne_zero, ↓reduceIte]
+
+        simp only [g]
+        rw[Function.eval_of]
+        simp only [g] at hg0_eval
+        rw[Function.eval_of] at hg0_eval
+        exact hg0_eval
+      · -- this is herculean
+        match z with
+        |  1 =>
+
+
+
+
+
+  -- apply isFalse
+  -- intro h
+  -- --let X:=  ({ (0 : ℕ) , (1 : ℕ) } : Set)
+  -- --let X : Set := ({((0 : Nat) : Object)} ∪ {((1 : Nat) : Object)} : Set)
+  -- let Y : Set := {((0 : Nat ) : Object), ((1 : Nat) : Object) , ((2 : Nat) : Object)}
+  -- let Z : Set := {((0 : Nat) : Object),  ((1 : Nat) : Object)}
+  -- let X:  Set := ({((0 : Nat) : Object),((1:Nat):Object)})
+
+  -- --rw[←  SetTheory.Set.nat_equiv_coe_of_coe] at Xx
+
+  -- --let Y:= ({0,1,2}:_root_.Set ℕ)
+  -- --let Z:= ({0,1}:_root_.Set ℕ)
+
+  -- have zero_mem_Y : ((0 : Nat ):Object) ∈ (Y:Set) :=by  simp[Y]
+  -- have one_mem_Y : ((1 : Nat ):Object) ∈ (Y:Set) :=by  simp[Y]
+  -- have zero_mem_X : ((0 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
+  -- have one_mem_X : ((1 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
+  -- --have two_mem_X : ((2 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
+
+  -- let xx :Set := {1,2,3}
+  -- let yy:Set := {1,2}
+
+
+
+
+  -- --let f : Function X Y := Function.mk_fn (fun _ ↦ (0:ℕ)  )
+
+  -- let f : Function X Y :=
+  --   Function.mk_fn (fun n:X  ↦
+  --     if         (n : X )  = (0:Nat): then
+  --       ⟨ (0 : Nat), zero_mem_Y ⟩
+  --     else if (n : X) = (1:X) then
+  --       ⟨ (0 : Nat), zero_mem_Y ⟩
+  --     else
+  --       -- some other element of Y, also wrapped as ⟨ value, proof_in_Y ⟩
+  --       ⟨ (1 : Nat), one_mem_Y ⟩ )
+
+
+
+    -- apply isFalse
+    -- push_neg
+    -- use Nat, Nat, {0}
+    -- use Function.mk_fn (fun x ↦ 0), Function.mk_fn (fun x ↦ ⟨0, by simp⟩)
+    -- simp only [onto, eval_of, exists_const, Subtype.forall, SetTheory.Set.mem_singleton, Subtype.mk.injEq,
+    --   forall_eq, not_forall, true_and]
+    -- use (1: Nat), (1: Nat).property
+    -- simp
 
 
 
