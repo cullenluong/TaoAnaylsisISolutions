@@ -508,6 +508,12 @@ theorem IsNull.measurable {d:ℕ} {E: Set (EuclideanSpace' d)} (hE: IsNull E) : 
       _ ≤ ε' := h_sum_le
       _ ≤ ε := hε'_le
 
+/-- A subset of a null set is null. -/
+lemma IsNull.subset {d:ℕ} {E F : Set (EuclideanSpace' d)} (hE : IsNull E) (hFE : F ⊆ E) : IsNull F := by
+  have := Lebesgue_outer_measure.mono hFE
+  rw [hE] at this
+  exact le_antisymm this (Lebesgue_outer_measure.nonneg F)
+
 /-- Lemma 1.2.13(iv) (Empty set is measurable).-/
 theorem LebesgueMeasurable.empty {d:ℕ} : LebesgueMeasurable (∅: Set (EuclideanSpace' d)) :=
 -- use (i) directly
@@ -813,6 +819,84 @@ theorem LebesgueMeasurable.inter {d :ℕ} {E F: Set (EuclideanSpace' d)} (hE: Le
   rw [h_eq]
   exact LebesgueMeasurable.finite_inter hS
 
+/-- Finite intersection indexed by a Finset is Lebesgue measurable. -/
+lemma LebesgueMeasurable.finset_inter {d : ℕ} {α : Type*} [DecidableEq α]
+    {E : α → Set (EuclideanSpace' d)} {S : Finset α}
+    (hE : ∀ i ∈ S, LebesgueMeasurable (E i)) :
+    LebesgueMeasurable (⋂ i ∈ S, E i) := by
+  induction S using Finset.induction_on with
+  | empty =>
+    simp only [Finset.notMem_empty, Set.iInter_of_empty, Set.iInter_univ]
+    rw [← Set.compl_empty]
+    exact LebesgueMeasurable.empty.complement
+  | insert a S' ha ih =>
+    simp only [Finset.mem_insert, forall_eq_or_imp] at hE
+    have hE_a := hE.1
+    have hE_rest := fun i hi => hE.2 i hi
+    rw [show (⋂ i ∈ insert a S', E i) = E a ∩ (⋂ i ∈ S', E i) by
+      ext x
+      simp only [Set.mem_iInter, Set.mem_inter_iff]
+      constructor
+      · intro h; exact ⟨h a (Finset.mem_insert_self a S'), fun i hi => h i (Finset.mem_insert_of_mem hi)⟩
+      · intro ⟨ha', h⟩ i hi
+        rcases Finset.mem_insert.mp hi with rfl | hi'
+        · exact ha'
+        · exact h i hi']
+    exact LebesgueMeasurable.inter hE_a (ih hE_rest)
+
+/-- Finite union indexed by a Finset is Lebesgue measurable. -/
+lemma LebesgueMeasurable.finset_union {d : ℕ} {α : Type*} [DecidableEq α]
+    {E : α → Set (EuclideanSpace' d)} {S : Finset α}
+    (hE : ∀ i ∈ S, LebesgueMeasurable (E i)) :
+    LebesgueMeasurable (⋃ i ∈ S, E i) := by
+  induction S using Finset.induction_on with
+  | empty =>
+    simp only [Finset.notMem_empty, Set.iUnion_of_empty, Set.iUnion_empty]
+    exact LebesgueMeasurable.empty
+  | insert a S' ha ih =>
+    simp only [Finset.mem_insert, forall_eq_or_imp] at hE
+    have hE_a := hE.1
+    have hE_rest := fun i hi => hE.2 i hi
+    rw [show (⋃ i ∈ insert a S', E i) = E a ∪ (⋃ i ∈ S', E i) by
+      ext x
+      simp only [Set.mem_iUnion, Set.mem_union]
+      constructor
+      · intro ⟨i, hi, hx⟩
+        rcases Finset.mem_insert.mp hi with rfl | hi'
+        · left; exact hx
+        · right; exact ⟨i, hi', hx⟩
+      · intro h
+        cases h with
+        | inl h => exact ⟨a, Finset.mem_insert_self a S', h⟩
+        | inr h => obtain ⟨i, hi, hx⟩ := h; exact ⟨i, Finset.mem_insert_of_mem hi, hx⟩]
+    exact LebesgueMeasurable.union hE_a (ih hE_rest)
+
+/-- If A = B outside a null set N (i.e., A ∩ Nᶜ = B ∩ Nᶜ), then A is measurable if B is. -/
+lemma LebesgueMeasurable.of_ae_eq {d : ℕ} {A B N : Set (EuclideanSpace' d)}
+    (hB : LebesgueMeasurable B) (hN : IsNull N) (h_eq : A ∩ Nᶜ = B ∩ Nᶜ) :
+    LebesgueMeasurable A := by
+  -- A = (B ∩ Nᶜ) ∪ (A ∩ N)
+  have h_decomp : A = (B ∩ Nᶜ) ∪ (A ∩ N) := by
+    ext x
+    constructor
+    · intro hx
+      by_cases hxN : x ∈ N
+      · right; exact ⟨hx, hxN⟩
+      · left; rw [← h_eq]; exact ⟨hx, hxN⟩
+    · intro hx
+      cases hx with
+      | inl h => rw [← h_eq] at h; exact h.1
+      | inr h => exact h.1
+  rw [h_decomp]
+  apply LebesgueMeasurable.union
+  · exact LebesgueMeasurable.inter hB (IsNull.measurable hN).complement
+  · exact IsNull.measurable (IsNull.subset hN Set.inter_subset_right)
+
+/-- Closed balls are Lebesgue measurable. -/
+lemma LebesgueMeasurable.closedBall {d : ℕ} (c : EuclideanSpace' d) (r : ℝ) :
+    LebesgueMeasurable (Metric.closedBall c r) :=
+  Metric.isClosed_closedBall.measurable
+
 /-- Exercise 1.2.7 (Criteria for measurability)-/
 theorem LebesgueMeasurable.TFAE {d:ℕ} (E: Set (EuclideanSpace' d)) :
     [
@@ -831,7 +915,7 @@ theorem Jordan_measurable.lebesgue {d:ℕ} {E: Set (EuclideanSpace' d)} (hE: Jor
 
 open BoundedInterval
 
-abbrev CantorInterval (n:ℕ) : Set ℝ := ⋃ a : Fin n → ({0, 2}:Set ℕ), (Icc (∑ i, (a i)/(3:ℝ)^(i.val+1)) (∑ i, a i/(3:ℝ)^(i.val+1) + 1/(3:ℝ)^(n+1))).toSet
+abbrev CantorInterval (n:ℕ) : Set ℝ := ⋃ a : Fin n → ({0, 2}:Set ℕ), (Icc (∑ i, (a i)/(3:ℝ)^(i.val+1)) (∑ i, a i/(3:ℝ)^(i.val+1) + 1/(3:ℝ)^n)).toSet
 
 abbrev CantorSet : Set ℝ := ⋂ n : ℕ, CantorInterval n
 

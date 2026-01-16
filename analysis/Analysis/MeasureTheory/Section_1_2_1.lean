@@ -4022,7 +4022,7 @@ theorem IsElementary.almost_disjoint {d k:ℕ} {E: Set (EuclideanSpace' d)} (hE:
         intro V hV_open hz_V
         by_contra h_empty
         push_neg at h_empty
-        rw [Set.eq_empty_iff_forall_not_mem] at h_empty
+        rw [Set.eq_empty_iff_forall_notMem] at h_empty
         have hV_sub : V ⊆ (B' i).toSet := fun w hw => by
           by_contra h_not_in
           exact h_empty w ⟨hw, h_not_in⟩
@@ -4030,7 +4030,7 @@ theorem IsElementary.almost_disjoint {d k:ℕ} {E: Set (EuclideanSpace' d)} (hE:
           rw [mem_interior_iff_mem_nhds]
           exact Filter.mem_of_superset (hV_open.mem_nhds hz_V) hV_sub
         have h_disj := h_almost_disj_last i
-        rw [AlmostDisjoint, Set.eq_empty_iff_forall_not_mem] at h_disj
+        rw [AlmostDisjoint, Set.eq_empty_iff_forall_notMem] at h_disj
         exact h_disj z ⟨hz_int_Bi, hz_int_Blast⟩
       -- Use the helper: finite union of box frontiers has empty interior
       have h_union_empty_int : interior (⋃ i : Fin n, frontier (B' i).toSet) = ∅ :=
