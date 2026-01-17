@@ -171,10 +171,10 @@ theorem Nat.add_eq_zero (a b:Nat) (hab: a + b = 0) : a = 0 ∧ b = 0 := by
   simp only [not_and_or, ←ne_eq] at h
   obtain ha | hb := h
   . rw [← isPos_iff] at ha
-    observe : (a + b).IsPos
+    observe this: (a + b).IsPos
     contradiction
   rw [← isPos_iff] at hb
-  observe : (a + b).IsPos
+  observe this: (a + b).IsPos
   contradiction
 
 /-
