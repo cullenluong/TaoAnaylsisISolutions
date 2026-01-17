@@ -45,7 +45,7 @@ example (M: Real) : M ∈ upperBounds (.Icc 0 1) ↔ M ≥ 1 := by sorry
 theorem Real.Ioi_def (x:Real) : .Ioi x = { z | z > x } := rfl
 
 /-- Example 5.5.3 -/
-example : ¬ ∃ M, M ∈ upperBounds (.Ioi 0) := by sorry
+example : ¬ ∃ M : Real, M ∈ upperBounds (.Ioi 0) := by sorry
 
 /-- Example 5.5.4 -/
 example : ∀ M, M ∈ upperBounds (∅ : Set Real) := by sorry
@@ -61,7 +61,7 @@ theorem Real.isGLB_def (E: Set Real) (M: Real) :
     IsGLB E M ↔ M ∈ lowerBounds E ∧ ∀ M' ∈ lowerBounds E, M' ≤ M := by rfl
 
 /-- Example 5.5.6 -/
-example : IsLUB (.Icc 0 1) 1 := by sorry
+example : IsLUB (.Icc 0 1) (1 : Real) := by sorry
 
 /-- Example 5.5.7 -/
 example : ¬∃ M, IsLUB (∅: Set Real) M := by sorry
@@ -198,7 +198,7 @@ instance ExtendedReal.inst_Top : Top ExtendedReal where
 
 /-- Mathlib prefers ⊥ to denote the -∞ element.-/
 instance ExtendedReal.inst_Bot: Bot ExtendedReal where
-  bot := infty
+  bot := neg_infty
 
 instance ExtendedReal.coe_real : Coe Real ExtendedReal where
   coe x := ExtendedReal.real x

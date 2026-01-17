@@ -108,6 +108,20 @@ lemma EReal.le_of_forall_pos_le_add' {a b : EReal}
         have h_ineq : b' + (a' - b') / 2 < a' := by linarith
         exact not_le.mpr (EReal.coe_lt_coe_iff.mpr h_ineq) h
 
+/-- Multiplication distributes over finite sums for EReal when all summands are non-negative.
+    This is needed because EReal lacks a general `LeftDistribClass` instance. -/
+lemma EReal.mul_finset_sum_of_nonneg (n : ℕ) (c : EReal) (f : Fin n → EReal) (hf : ∀ i, 0 ≤ f i) :
+    c * (∑ i, f i) = ∑ i, c * f i := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [Fin.sum_univ_castSucc, Fin.sum_univ_castSucc]
+    have hsum_nonneg : 0 ≤ ∑ i : Fin n, f i.castSucc := Finset.sum_nonneg (fun i _ => hf _)
+    have hlast_nonneg : 0 ≤ f (Fin.last n) := hf _
+    rw [EReal.left_distrib_of_nonneg hsum_nonneg hlast_nonneg]
+    congr 1
+    exact ih (fun i => f i.castSucc) (fun i => hf _)
+
 /-- For non-negative reals, toEReal commutes with finite sums.
     Uses induction on the finset with EReal.coe_add. -/
 lemma EReal.coe_finset_sum {α : Type*} {s : Finset α} {f : α → ℝ}
@@ -399,3 +413,38 @@ lemma EReal.tsum_le_of_sum_range_le_of_nonneg {f : ℕ → EReal} {M : EReal}
   calc (∑' n, g n : ENNReal).toEReal ≤ (M.toENNReal).toEReal := h_coe_le
     _ = M := EReal.coe_toENNReal hM_nn
 >>>>>>> Upstream/main
+
+/-- If tsum in ENNReal equals ⊤, then tsum of coerced values in EReal equals ⊤.
+    Uses that ENNReal → EReal coercion is continuous and additive. -/
+lemma EReal.tsum_coe_ennreal_eq_top_of_tsum_eq_top {α : Type*} {f : α → ENNReal}
+    (h : ∑' i, f i = ⊤) : ∑' i, (f i : EReal) = ⊤ := by
+  let φ : ENNReal →+ EReal := {
+    toFun := (↑·)
+    map_zero' := by simp
+    map_add' := EReal.coe_ennreal_add
+  }
+  have h_map : φ (∑' i, f i) = ∑' i, φ (f i) :=
+    Summable.map_tsum (f := f) ENNReal.summable φ continuous_coe_ennreal_ereal
+  simp only [h] at h_map
+  exact h_map.symm
+
+/-- Tsum of a positive constant over an infinite type is ⊤ in EReal -/
+lemma EReal.tsum_const_eq_top_of_pos {α : Type*} [Infinite α] {c : EReal} (hc : 0 < c) :
+    ∑' (_ : α), c = ⊤ := by
+  by_cases h_top : c = ⊤
+  · -- c = ⊤: convert through ENNReal
+    rw [h_top, ← EReal.coe_ennreal_top]
+    apply EReal.tsum_coe_ennreal_eq_top_of_tsum_eq_top
+    exact ENNReal.tsum_const_eq_top_of_ne_zero (by simp : (⊤ : ENNReal) ≠ 0)
+  · -- c is finite and positive
+    have hc_nn : 0 ≤ c := le_of_lt hc
+    have c_eq : c = ↑(c.toENNReal) := (EReal.coe_toENNReal hc_nn).symm
+    rw [c_eq]
+    have hc_ne_zero : c.toENNReal ≠ 0 := by
+      intro h_eq
+      rw [h_eq] at c_eq
+      norm_num [ENNReal.coe_zero] at c_eq
+      rw [c_eq] at hc
+      norm_num at hc
+    apply EReal.tsum_coe_ennreal_eq_top_of_tsum_eq_top
+    exact ENNReal.tsum_const_eq_top_of_ne_zero hc_ne_zero

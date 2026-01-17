@@ -96,6 +96,7 @@ theorem Real.zpow_ge_zpow_ofneg {x y:Real} {n:ℤ} (hxy: x ≥ y) (hy: y > 0) (h
 /-- Analogue of Proposition 4.3.12(c) -/
 theorem Real.zpow_inj {x y:Real} {n:ℤ} (hx: x > 0) (hy : y > 0) (hn: n ≠ 0) (hxy: x^n = y^n) : x = y := by
   sorry
+
 /-- Analogue of Proposition 4.3.12(d) -/
 theorem Real.zpow_abs (x:Real) (n:ℤ) : |x|^n = |x^n| := by sorry
 
@@ -155,7 +156,7 @@ theorem Real.root_of_one {k: ℕ} (hk: k ≥ 1): (1:Real).root k = 1 := by sorry
 /-- Lemma 5.6.6 (f) / Exercise 5.6.1 -/
 theorem Real.root_mul {x y:Real} (hx: x ≥ 0) (hy: y ≥ 0) {n:ℕ} (hn: n ≥ 1) : (x*y).root n = (x.root n) * (y.root n) := by sorry
 
-/-- Lemma 5.6.6 (f) / Exercise 5.6.1 -/
+/-- Lemma 5.6.6 (g) / Exercise 5.6.1 -/
 theorem Real.root_root {x:Real} (hx: x ≥ 0) {n m:ℕ} (hn: n ≥ 1) (hm: m ≥ 1): (x.root n).root m = x.root (n*m) := by sorry
 
 theorem Real.root_one {x:Real} (hx: x > 0): x.root 1 = x := by sorry
@@ -213,7 +214,7 @@ theorem Real.ratPow_eq_root {x:Real} (hx: x > 0) {n:ℕ} (hn: n ≥ 1) : x^(1/n:
 theorem Real.ratPow_eq_pow {x:Real} (hx: x > 0) (n:ℤ) : x^(n:ℚ) = x^n := by sorry
 
 /-- Lemma 5.6.9(a) / Exercise 5.6.2 -/
-theorem Real.ratPow_nonneg {x:Real} (hx: x > 0) (q:ℚ) : x^q > 0 := by
+theorem Real.ratPow_pos {x:Real} (hx: x > 0) (q:ℚ) : x^q > 0 := by
   sorry
 
 /-- Lemma 5.6.9(b) / Exercise 5.6.2 -/
@@ -249,12 +250,12 @@ theorem Real.pow_even (x:Real) {n:ℕ} (hn: Even n) : x^n ≥ 0 := by sorry
 
 /-- Exercise 5.6.5 -/
 theorem Real.max_ratPow {x y:Real} (hx: x > 0) (hy: y > 0) {q:ℚ} (hq: q > 0) :
-  max (x^q) y^q = (max x y)^q := by
+  max (x^q) (y^q) = (max x y)^q := by
   sorry
 
 /-- Exercise 5.6.5 -/
 theorem Real.min_ratPow {x y:Real} (hx: x > 0) (hy: y > 0) {q:ℚ} (hq: q > 0) :
-  min (x^q) y^q = (min x y)^q := by
+  min (x^q) (y^q) = (min x y)^q := by
   sorry
 
 -- Final part of Exercise 5.6.5: state and prove versions of the above lemmas covering the case of negative q.

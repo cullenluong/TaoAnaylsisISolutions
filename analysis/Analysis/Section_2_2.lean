@@ -226,6 +226,7 @@ instance Nat.instLE : LE Nat where
 instance Nat.instLT : LT Nat where
   lt n m := n ≤ m ∧ n ≠ m
 
+/-- Compare with Mathlib's `le_iff_exists_add`. -/
 lemma Nat.le_iff (n m:Nat) : n ≤ m ↔ ∃ a:Nat, m = n + a := by rfl
 
 lemma Nat.lt_iff (n m:Nat) : n < m ↔ (∃ a:Nat, m = n + a) ∧ n ≠ m := by rfl

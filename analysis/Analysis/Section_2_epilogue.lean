@@ -118,7 +118,7 @@ abbrev natCast (P : PeanoAxioms) : ℕ → P.Nat := fun n ↦ match n with
   | Nat.succ n => P.succ (natCast P n)
 
 /-- One can start the proof here with `unfold Function.Injective`, although it is not strictly necessary. -/
-theorem natCast_injective (P : PeanoAxioms) : Function.Injective P.natCast  := by
+theorem natCast_injective (P : PeanoAxioms) : Function.Injective P.natCast := by
   sorry
 
 /-- One can start the proof here with `unfold Function.Surjective`, although it is not strictly necessary. -/

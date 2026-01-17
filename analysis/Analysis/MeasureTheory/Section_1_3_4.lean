@@ -17,19 +17,170 @@ def ComplexAbsolutelyIntegrable {d:ℕ} (f: EuclideanSpace' d → ℂ) : Prop :=
 
 def RealAbsolutelyIntegrable {d:ℕ} (f: EuclideanSpace' d → ℝ) : Prop := RealMeasurable f ∧ UnsignedLebesgueIntegral (EReal.abs_fun f) < ⊤
 
-lemma ComplexAbsolutelyIntegrable.abs {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.abs_fun f) := by sorry
+lemma ComplexAbsolutelyIntegrable.abs {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.abs_fun f) := by
+  constructor
+  · -- UnsignedMeasurable (EReal.abs_fun f)
+    constructor
+    · -- Unsigned: ∀ x, EReal.abs_fun f x ≥ 0
+      intro x
+      simp only [EReal.abs_fun]
+      exact EReal.coe_nonneg.mpr (norm_nonneg _)
+    · -- Exists approximating unsigned simple functions
+      obtain ⟨g, hg_simple, hg_conv⟩ := hf.1
+      use fun n => EReal.abs_fun (g n)
+      constructor
+      · intro n; exact (hg_simple n).abs
+      · intro x
+        simp only [EReal.abs_fun]
+        exact (continuous_coe_real_ereal.comp continuous_norm).continuousAt.tendsto.comp (hg_conv x)
+  · exact hf.2
 
-lemma RealAbsolutelyIntegrable.abs {d:ℕ} (f: EuclideanSpace' d → ℝ) (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.abs_fun f) := by sorry
+lemma RealAbsolutelyIntegrable.abs {d:ℕ} (f: EuclideanSpace' d → ℝ) (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.abs_fun f) := by
+  constructor
+  · -- UnsignedMeasurable (EReal.abs_fun f)
+    constructor
+    · intro x
+      simp only [EReal.abs_fun]
+      exact EReal.coe_nonneg.mpr (norm_nonneg _)
+    · obtain ⟨g, hg_simple, hg_conv⟩ := hf.1
+      use fun n => EReal.abs_fun (g n)
+      constructor
+      · intro n; exact (hg_simple n).abs
+      · intro x
+        simp only [EReal.abs_fun]
+        exact (continuous_coe_real_ereal.comp continuous_norm).continuousAt.tendsto.comp (hg_conv x)
+  · exact hf.2
 
 
 
-lemma RealAbsolutelyIntegrable.iff {d:ℕ} (f: EuclideanSpace' d → ℝ) : RealAbsolutelyIntegrable f ↔ ComplexAbsolutelyIntegrable (fun x ↦ (f x:ℂ)) := by sorry
+lemma RealAbsolutelyIntegrable.iff {d:ℕ} (f: EuclideanSpace' d → ℝ) : RealAbsolutelyIntegrable f ↔ ComplexAbsolutelyIntegrable (fun x ↦ (f x:ℂ)) := by
+  constructor
+  · intro ⟨hf_meas, hf_integ⟩
+    constructor
+    · exact RealMeasurable.iff.mp hf_meas
+    · convert hf_integ using 2
+      funext x
+      simp only [EReal.abs_fun]
+      congr 1
+      rw [Complex.norm_real, Real.norm_eq_abs]
+  · intro ⟨hf_meas, hf_integ⟩
+    constructor
+    · exact RealMeasurable.iff.mpr hf_meas
+    · convert hf_integ using 2
+      funext x
+      simp only [EReal.abs_fun]
+      congr 1
+      rw [Complex.norm_real, Real.norm_eq_abs]
 
-lemma ComplexAbsolutelyIntegrable.re {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (Complex.re_fun f) := by sorry
+lemma ComplexAbsolutelyIntegrable.re {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (Complex.re_fun f) := by
+  have h_re_meas : RealMeasurable (Complex.re_fun f) := ComplexMeasurable.iff.mp hf.1 |>.1
+  constructor
+  · exact h_re_meas
+  · have h_le : ∀ x, EReal.abs_fun (Complex.re_fun f) x ≤ EReal.abs_fun f x := fun x => by
+      simp only [EReal.abs_fun, Complex.re_fun]
+      apply EReal.coe_le_coe_iff.mpr
+      rw [Real.norm_eq_abs]
+      exact Complex.abs_re_le_norm (f x)
+    -- Build UnsignedMeasurable for |Re(f)| directly from RealMeasurable (re_fun f)
+    have h_re_abs_meas : UnsignedMeasurable (EReal.abs_fun (Complex.re_fun f)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨g, hg_simple, hg_conv⟩ := h_re_meas
+        use fun n => EReal.abs_fun (g n)
+        constructor
+        · intro n; exact (hg_simple n).abs
+        · intro x
+          simp only [EReal.abs_fun, Complex.re_fun]
+          exact (continuous_coe_real_ereal.comp continuous_norm).continuousAt.tendsto.comp (hg_conv x)
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (Complex.re_fun f)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      apply LowerUnsignedLebesgueIntegral.mono
+      · exact h_re_abs_meas
+      · exact hf.abs.1
+      · exact AlmostAlways.ofAlways h_le
+    exact lt_of_le_of_lt h_mono hf.2
 
-lemma ComplexAbsolutelyIntegrable.im {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (Complex.im_fun f) := by sorry
+lemma ComplexAbsolutelyIntegrable.im {d:ℕ} (f: EuclideanSpace' d → ℂ) (hf: ComplexAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (Complex.im_fun f) := by
+  have h_im_meas : RealMeasurable (Complex.im_fun f) := ComplexMeasurable.iff.mp hf.1 |>.2
+  constructor
+  · exact h_im_meas
+  · have h_le : ∀ x, EReal.abs_fun (Complex.im_fun f) x ≤ EReal.abs_fun f x := fun x => by
+      simp only [EReal.abs_fun, Complex.im_fun]
+      apply EReal.coe_le_coe_iff.mpr
+      rw [Real.norm_eq_abs]
+      exact Complex.abs_im_le_norm (f x)
+    -- Build UnsignedMeasurable for |Im(f)| directly from RealMeasurable (im_fun f)
+    have h_im_abs_meas : UnsignedMeasurable (EReal.abs_fun (Complex.im_fun f)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨g, hg_simple, hg_conv⟩ := h_im_meas
+        use fun n => EReal.abs_fun (g n)
+        constructor
+        · intro n; exact (hg_simple n).abs
+        · intro x
+          simp only [EReal.abs_fun, Complex.im_fun]
+          exact (continuous_coe_real_ereal.comp continuous_norm).continuousAt.tendsto.comp (hg_conv x)
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (Complex.im_fun f)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      apply LowerUnsignedLebesgueIntegral.mono
+      · exact h_im_abs_meas
+      · exact hf.abs.1
+      · exact AlmostAlways.ofAlways h_le
+    exact lt_of_le_of_lt h_mono hf.2
 
-lemma ComplexAbsolutelyIntegrable.iff {d:ℕ} (f: EuclideanSpace' d → ℂ) : ComplexAbsolutelyIntegrable f ↔ RealAbsolutelyIntegrable (Complex.re_fun f) ∧ RealAbsolutelyIntegrable (Complex.im_fun f) := by sorry
+lemma ComplexAbsolutelyIntegrable.iff {d:ℕ} (f: EuclideanSpace' d → ℂ) : ComplexAbsolutelyIntegrable f ↔ RealAbsolutelyIntegrable (Complex.re_fun f) ∧ RealAbsolutelyIntegrable (Complex.im_fun f) := by
+  constructor
+  · intro hf
+    exact ⟨ComplexAbsolutelyIntegrable.re f hf, ComplexAbsolutelyIntegrable.im f hf⟩
+  · intro ⟨hre, him⟩
+    constructor
+    · exact ComplexMeasurable.iff.mpr ⟨hre.1, him.1⟩
+    · -- Use |f| ≤ |Re(f)| + |Im(f)| to bound the integral
+      have h_bound : ∀ x, EReal.abs_fun f x ≤
+          (EReal.abs_fun (Complex.re_fun f) + EReal.abs_fun (Complex.im_fun f)) x := fun x => by
+        simp only [EReal.abs_fun, Complex.re_fun, Complex.im_fun, Pi.add_apply]
+        apply EReal.coe_le_coe_iff.mpr
+        calc ‖f x‖ = Real.sqrt ((f x).re^2 + (f x).im^2) := Complex.norm_eq_sqrt_sq_add_sq (f x)
+          _ ≤ |((f x).re)| + |(f x).im| := by
+            have h1 : (f x).re^2 + (f x).im^2 ≤ (|(f x).re| + |(f x).im|)^2 := by
+              have h_cross : 0 ≤ 2 * |(f x).re| * |(f x).im| := by positivity
+              calc (f x).re^2 + (f x).im^2
+                  ≤ (f x).re^2 + 2 * |(f x).re| * |(f x).im| + (f x).im^2 := by linarith
+                _ = |(f x).re|^2 + 2 * |(f x).re| * |(f x).im| + |(f x).im|^2 := by rw [sq_abs, sq_abs]
+                _ = (|(f x).re| + |(f x).im|)^2 := by ring
+            have h2 : 0 ≤ |(f x).re| + |(f x).im| := by positivity
+            calc Real.sqrt ((f x).re^2 + (f x).im^2)
+                ≤ Real.sqrt ((|(f x).re| + |(f x).im|)^2) := Real.sqrt_le_sqrt h1
+              _ = |(f x).re| + |(f x).im| := Real.sqrt_sq h2
+          _ = ‖(f x).re‖ + ‖(f x).im‖ := by rw [Real.norm_eq_abs, Real.norm_eq_abs]
+      -- Apply monotonicity and additivity of integral
+      have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun f) ≤
+                    UnsignedLebesgueIntegral (EReal.abs_fun (Complex.re_fun f) +
+                                              EReal.abs_fun (Complex.im_fun f)) := by
+        apply LowerUnsignedLebesgueIntegral.mono
+        · constructor
+          · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+          · obtain ⟨g, hg_simple, hg_conv⟩ := ComplexMeasurable.iff.mpr ⟨hre.1, him.1⟩
+            use fun n => EReal.abs_fun (g n)
+            constructor
+            · intro n; exact (hg_simple n).abs
+            · intro x
+              simp only [EReal.abs_fun]
+              exact (continuous_coe_real_ereal.comp continuous_norm).continuousAt.tendsto.comp (hg_conv x)
+        · exact hre.abs.1.add him.abs.1
+        · exact AlmostAlways.ofAlways h_bound
+      -- UnsignedLebesgueIntegral is defined as LowerUnsignedLebesgueIntegral
+      have h_add : UnsignedLebesgueIntegral (EReal.abs_fun (Complex.re_fun f) +
+                                             EReal.abs_fun (Complex.im_fun f)) =
+                   UnsignedLebesgueIntegral (EReal.abs_fun (Complex.re_fun f)) +
+                   UnsignedLebesgueIntegral (EReal.abs_fun (Complex.im_fun f)) := by
+        exact LowerUnsignedLebesgueIntegral.add hre.abs.1 him.abs.1
+          (UnsignedMeasurable.add hre.abs.1 him.abs.1)
+      rw [h_add] at h_mono
+      calc UnsignedLebesgueIntegral (EReal.abs_fun f)
+          ≤ UnsignedLebesgueIntegral (EReal.abs_fun (Complex.re_fun f)) +
+            UnsignedLebesgueIntegral (EReal.abs_fun (Complex.im_fun f)) := h_mono
+        _ < ⊤ := EReal.add_lt_top (lt_top_iff_ne_top.mp hre.2) (lt_top_iff_ne_top.mp him.2)
 
 noncomputable def UnsignedAbsolutelyIntegrable.integ {d:ℕ} (f: EuclideanSpace' d → EReal) (_: UnsignedAbsolutelyIntegrable f) : ℝ := (UnsignedLebesgueIntegral f).toReal
 
@@ -38,13 +189,71 @@ noncomputable def ComplexAbsolutelyIntegrable.norm {d:ℕ} {f: EuclideanSpace' d
 noncomputable def RealAbsolutelyIntegrable.norm {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : ℝ := hf.abs.integ
 
 
-def RealMeasurable.measurable_pos {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealMeasurable f) : UnsignedMeasurable (EReal.pos_fun f) := by sorry
+def RealMeasurable.measurable_pos {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealMeasurable f) : UnsignedMeasurable (EReal.pos_fun f) := by
+  constructor
+  · -- Unsigned: ∀ x, EReal.pos_fun f x ≥ 0
+    intro x
+    simp only [EReal.pos_fun]
+    exact EReal.coe_nonneg.mpr (le_max_right _ _)
+  · -- Exists approximating unsigned simple functions
+    obtain ⟨g, hg_simple, hg_conv⟩ := hf
+    use fun n => EReal.pos_fun (g n)
+    constructor
+    · intro n; exact (hg_simple n).pos
+    · intro x
+      simp only [EReal.pos_fun]
+      have hcont : Continuous (fun y : ℝ => (max y 0).toEReal) :=
+        continuous_coe_real_ereal.comp (continuous_max.comp (continuous_id.prodMk continuous_const))
+      exact hcont.continuousAt.tendsto.comp (hg_conv x)
 
-def RealMeasurable.measurable_neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealMeasurable f) : UnsignedMeasurable (EReal.neg_fun f) := by sorry
+def RealMeasurable.measurable_neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealMeasurable f) : UnsignedMeasurable (EReal.neg_fun f) := by
+  constructor
+  · -- Unsigned: ∀ x, EReal.neg_fun f x ≥ 0
+    intro x
+    simp only [EReal.neg_fun]
+    exact EReal.coe_nonneg.mpr (le_max_right _ _)
+  · -- Exists approximating unsigned simple functions
+    obtain ⟨g, hg_simple, hg_conv⟩ := hf
+    use fun n => EReal.neg_fun (g n)
+    constructor
+    · intro n; exact (hg_simple n).neg
+    · intro x
+      simp only [EReal.neg_fun]
+      have hcont : Continuous (fun y : ℝ => (max (-y) 0).toEReal) :=
+        continuous_coe_real_ereal.comp (continuous_max.comp (continuous_neg.prodMk continuous_const))
+      exact hcont.continuousAt.tendsto.comp (hg_conv x)
 
-def RealAbsolutelyIntegrable.pos {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.pos_fun f) := by sorry
+def RealAbsolutelyIntegrable.pos {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.pos_fun f) := by
+  constructor
+  · exact hf.1.measurable_pos
+  · -- UnsignedLebesgueIntegral (pos_fun f) ≤ UnsignedLebesgueIntegral (abs_fun f) < ⊤
+    have h_le : ∀ x, EReal.pos_fun f x ≤ EReal.abs_fun f x := fun x => by
+      simp only [EReal.pos_fun, EReal.abs_fun]
+      apply EReal.coe_le_coe_iff.mpr
+      rw [Real.norm_eq_abs, max_le_iff]
+      exact ⟨le_abs_self _, abs_nonneg _⟩
+    have h_mono : UnsignedLebesgueIntegral (EReal.pos_fun f) ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      apply LowerUnsignedLebesgueIntegral.mono
+      · exact hf.1.measurable_pos
+      · exact hf.abs.1
+      · exact AlmostAlways.ofAlways h_le
+    exact lt_of_le_of_lt h_mono hf.2
 
-def RealAbsolutelyIntegrable.neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.neg_fun f) := by sorry
+def RealAbsolutelyIntegrable.neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : UnsignedAbsolutelyIntegrable (EReal.neg_fun f) := by
+  constructor
+  · exact hf.1.measurable_neg
+  · -- UnsignedLebesgueIntegral (neg_fun f) ≤ UnsignedLebesgueIntegral (abs_fun f) < ⊤
+    have h_le : ∀ x, EReal.neg_fun f x ≤ EReal.abs_fun f x := fun x => by
+      simp only [EReal.neg_fun, EReal.abs_fun]
+      apply EReal.coe_le_coe_iff.mpr
+      rw [Real.norm_eq_abs, max_le_iff]
+      exact ⟨neg_le_abs _, abs_nonneg _⟩
+    have h_mono : UnsignedLebesgueIntegral (EReal.neg_fun f) ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      apply LowerUnsignedLebesgueIntegral.mono
+      · exact hf.1.measurable_neg
+      · exact hf.abs.1
+      · exact AlmostAlways.ofAlways h_le
+    exact lt_of_le_of_lt h_mono hf.2
 
 noncomputable def RealAbsolutelyIntegrable.integ {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : ℝ := hf.pos.integ - hf.neg.integ
 
@@ -58,32 +267,347 @@ noncomputable def RealLebesgueIntegral {d:ℕ} (f: EuclideanSpace' d → ℝ) : 
 open Classical in
 noncomputable def ComplexLebesgueIntegral {d:ℕ} (f: EuclideanSpace' d → ℂ) : ℂ  := if hf: ComplexAbsolutelyIntegrable f then hf.integ else 0
 
+<<<<<<< HEAD
 >>>>>>> Upstream/main
 def RealSimpleFunction.absolutelyIntegrable_iff' {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealSimpleFunction f) : hf.AbsolutelyIntegrable ↔ RealAbsolutelyIntegrable f := by sorry
+=======
+def RealSimpleFunction.absolutelyIntegrable_iff' {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealSimpleFunction f) : hf.AbsolutelyIntegrable ↔ RealAbsolutelyIntegrable f := by
+  constructor
+  · -- Forward: hf.AbsolutelyIntegrable → RealAbsolutelyIntegrable f
+    intro hfi
+    constructor
+    · -- RealMeasurable f: use constant sequence
+      exact ⟨fun _ => f, fun _ => hf, fun _ => tendsto_const_nhds⟩
+    · -- UnsignedLebesgueIntegral (EReal.abs_fun f) < ⊤
+      rw [UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.abs]
+      exact hfi
+  · -- Backward: RealAbsolutelyIntegrable f → hf.AbsolutelyIntegrable
+    intro ⟨_, hf_integ⟩
+    rw [RealSimpleFunction.AbsolutelyIntegrable, ← LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.abs]
+    exact hf_integ
+>>>>>>> Upstream/main
 
-def ComplexSimpleFunction.absolutelyIntegrable_iff' {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexSimpleFunction f) : hf.AbsolutelyIntegrable ↔ ComplexAbsolutelyIntegrable f := by sorry
+def ComplexSimpleFunction.absolutelyIntegrable_iff' {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexSimpleFunction f) : hf.AbsolutelyIntegrable ↔ ComplexAbsolutelyIntegrable f := by
+  constructor
+  · -- Forward: hf.AbsolutelyIntegrable → ComplexAbsolutelyIntegrable f
+    intro hfi
+    constructor
+    · -- ComplexMeasurable f: use constant sequence
+      exact ⟨fun _ => f, fun _ => hf, fun _ => tendsto_const_nhds⟩
+    · -- UnsignedLebesgueIntegral (EReal.abs_fun f) < ⊤
+      rw [UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.abs]
+      exact hfi
+  · -- Backward: ComplexAbsolutelyIntegrable f → hf.AbsolutelyIntegrable
+    intro ⟨_, hf_integ⟩
+    rw [ComplexSimpleFunction.AbsolutelyIntegrable, ← LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.abs]
+    exact hf_integ
 
-def RealSimpleFunction.AbsolutelyIntegrable.integ_eq {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealSimpleFunction f) (hfi: hf.AbsolutelyIntegrable) : hf.integ = (hf.absolutelyIntegrable_iff'.mp hfi).integ := by sorry
+def RealSimpleFunction.AbsolutelyIntegrable.integ_eq {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealSimpleFunction f) (hfi: hf.AbsolutelyIntegrable) : hf.integ = (hf.absolutelyIntegrable_iff'.mp hfi).integ := by
+  -- hf.integ = (hf.pos).integ.toReal - (hf.neg).integ.toReal
+  -- (hf.absolutelyIntegrable_iff'.mp hfi).integ = (UnsignedLebesgueIntegral (pos_fun f)).toReal - (UnsignedLebesgueIntegral (neg_fun f)).toReal
+  simp only [RealSimpleFunction.integ, RealAbsolutelyIntegrable.integ, UnsignedAbsolutelyIntegrable.integ]
+  congr 1
+  · -- (hf.pos).integ.toReal = (UnsignedLebesgueIntegral (pos_fun f)).toReal
+    rw [UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.pos]
+  · -- (hf.neg).integ.toReal = (UnsignedLebesgueIntegral (neg_fun f)).toReal
+    rw [UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf.neg]
 
-def ComplexSimpleFunction.AbsolutelyIntegrable.integ_eq {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexSimpleFunction f) (hfi: hf.AbsolutelyIntegrable) : hf.integ = (hf.absolutelyIntegrable_iff'.mp hfi).integ := by sorry
+def ComplexSimpleFunction.AbsolutelyIntegrable.integ_eq {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexSimpleFunction f) (hfi: hf.AbsolutelyIntegrable) : hf.integ = (hf.absolutelyIntegrable_iff'.mp hfi).integ := by
+  -- Both sides are defined as re.integ + I * im.integ
+  simp only [ComplexSimpleFunction.integ, ComplexAbsolutelyIntegrable.integ]
+  -- The key is that the re and im of the complex absolutely integrable give the same integral as the real simple function integrals
+  have hf_re : RealSimpleFunction (Complex.re_fun f) := ComplexSimpleFunction.re hf
+  have hf_im : RealSimpleFunction (Complex.im_fun f) := ComplexSimpleFunction.im hf
+  congr 1
+  · -- hf.re.integ = (hf.absolutelyIntegrable_iff'.mp hfi).re.integ
+    have hre_fi : hf_re.AbsolutelyIntegrable := by
+      rw [RealSimpleFunction.AbsolutelyIntegrable]
+      have h := ComplexAbsolutelyIntegrable.re f (hf.absolutelyIntegrable_iff'.mp hfi)
+      rw [RealAbsolutelyIntegrable, UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf_re.abs] at h
+      exact h.2
+    have heq := RealSimpleFunction.AbsolutelyIntegrable.integ_eq hf_re hre_fi
+    simp only [heq]
+  · -- hf.im.integ = (hf.absolutelyIntegrable_iff'.mp hfi).im.integ
+    have him_fi : hf_im.AbsolutelyIntegrable := by
+      rw [RealSimpleFunction.AbsolutelyIntegrable]
+      have h := ComplexAbsolutelyIntegrable.im f (hf.absolutelyIntegrable_iff'.mp hfi)
+      rw [RealAbsolutelyIntegrable, UnsignedLebesgueIntegral, LowerUnsignedLebesgueIntegral.eq_simpleIntegral hf_im.abs] at h
+      exact h.2
+    have heq := RealSimpleFunction.AbsolutelyIntegrable.integ_eq hf_im him_fi
+    simp only [heq]
 
-theorem RealAbsolutelyIntegrable.add {d:ℕ} {f g: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (hg: RealAbsolutelyIntegrable g) : RealAbsolutelyIntegrable (f + g) := by sorry
+theorem RealAbsolutelyIntegrable.add {d:ℕ} {f g: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (hg: RealAbsolutelyIntegrable g) : RealAbsolutelyIntegrable (f + g) := by
+  constructor
+  · exact RealMeasurable.add hf.1 hg.1
+  · -- Show ∫ |f + g| ≤ ∫ |f| + ∫ |g| < ∞
+    have h_le : ∀ x, EReal.abs_fun (f + g) x ≤ (EReal.abs_fun f + EReal.abs_fun g) x := fun x => by
+      simp only [EReal.abs_fun, Pi.add_apply]
+      rw [← EReal.coe_add]
+      exact EReal.coe_le_coe_iff.mpr (norm_add_le (f x) (g x))
+    have hf_abs := RealAbsolutelyIntegrable.abs f hf
+    have hg_abs := RealAbsolutelyIntegrable.abs g hg
+    have hfg_abs_meas : UnsignedMeasurable (EReal.abs_fun (f + g)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨gf, hgf_simple, hgf_conv⟩ := hf.1
+        obtain ⟨gg, hgg_simple, hgg_conv⟩ := hg.1
+        use fun n => EReal.abs_fun (gf n + gg n)
+        constructor
+        · intro n; exact (RealSimpleFunction.add (hgf_simple n) (hgg_simple n)).abs
+        · intro x
+          simp only [EReal.abs_fun]
+          have hcont : Continuous (fun y : ℝ => ‖y‖.toEReal) :=
+            continuous_coe_real_ereal.comp continuous_norm
+          have hconv : Filter.Tendsto (fun n => gf n x + gg n x) Filter.atTop (nhds (f x + g x)) :=
+            Filter.Tendsto.add (hgf_conv x) (hgg_conv x)
+          exact hcont.continuousAt.tendsto.comp hconv
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (f + g)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.mono hfg_abs_meas (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+      exact AlmostAlways.ofAlways h_le
+    have h_add : UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) =
+                 UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.add hf_abs.1 hg_abs.1 (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+    calc UnsignedLebesgueIntegral (EReal.abs_fun (f + g))
+        ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+          rw [← h_add]; exact h_mono
+      _ < ⊤ := EReal.add_lt_top hf.2.ne_top hg.2.ne_top
 
-theorem ComplexAbsolutelyIntegrable.add {d:ℕ} {f g: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (hg: ComplexAbsolutelyIntegrable g) : ComplexAbsolutelyIntegrable (f + g) := by sorry
+theorem ComplexAbsolutelyIntegrable.add {d:ℕ} {f g: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (hg: ComplexAbsolutelyIntegrable g) : ComplexAbsolutelyIntegrable (f + g) := by
+  constructor
+  · exact ComplexMeasurable.add hf.1 hg.1
+  · have h_le : ∀ x, EReal.abs_fun (f + g) x ≤ (EReal.abs_fun f + EReal.abs_fun g) x := fun x => by
+      simp only [EReal.abs_fun, Pi.add_apply]
+      rw [← EReal.coe_add]
+      exact EReal.coe_le_coe_iff.mpr (norm_add_le (f x) (g x))
+    have hf_abs := ComplexAbsolutelyIntegrable.abs f hf
+    have hg_abs := ComplexAbsolutelyIntegrable.abs g hg
+    have hfg_abs_meas : UnsignedMeasurable (EReal.abs_fun (f + g)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨gf, hgf_simple, hgf_conv⟩ := hf.1
+        obtain ⟨gg, hgg_simple, hgg_conv⟩ := hg.1
+        use fun n => EReal.abs_fun (gf n + gg n)
+        constructor
+        · intro n; exact (ComplexSimpleFunction.add (hgf_simple n) (hgg_simple n)).abs
+        · intro x
+          simp only [EReal.abs_fun]
+          have hcont : Continuous (fun y : ℂ => ‖y‖.toEReal) :=
+            continuous_coe_real_ereal.comp continuous_norm
+          have hconv : Filter.Tendsto (fun n => gf n x + gg n x) Filter.atTop (nhds (f x + g x)) :=
+            Filter.Tendsto.add (hgf_conv x) (hgg_conv x)
+          exact hcont.continuousAt.tendsto.comp hconv
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (f + g)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.mono hfg_abs_meas (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+      exact AlmostAlways.ofAlways h_le
+    have h_add : UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) =
+                 UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.add hf_abs.1 hg_abs.1 (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+    calc UnsignedLebesgueIntegral (EReal.abs_fun (f + g))
+        ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+          rw [← h_add]; exact h_mono
+      _ < ⊤ := EReal.add_lt_top hf.2.ne_top hg.2.ne_top
 
-theorem RealAbsolutelyIntegrable.sub {d:ℕ} {f g: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (hg: RealAbsolutelyIntegrable g) : RealAbsolutelyIntegrable (f - g) := by sorry
+theorem RealAbsolutelyIntegrable.sub {d:ℕ} {f g: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (hg: RealAbsolutelyIntegrable g) : RealAbsolutelyIntegrable (f - g) := by
+  constructor
+  · exact RealMeasurable.sub hf.1 hg.1
+  · have h_le : ∀ x, EReal.abs_fun (f - g) x ≤ (EReal.abs_fun f + EReal.abs_fun g) x := fun x => by
+      simp only [EReal.abs_fun, Pi.sub_apply, Pi.add_apply]
+      rw [← EReal.coe_add]
+      exact EReal.coe_le_coe_iff.mpr (norm_sub_le (f x) (g x))
+    have hf_abs := RealAbsolutelyIntegrable.abs f hf
+    have hg_abs := RealAbsolutelyIntegrable.abs g hg
+    have hfg_abs_meas : UnsignedMeasurable (EReal.abs_fun (f - g)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨gf, hgf_simple, hgf_conv⟩ := hf.1
+        obtain ⟨gg, hgg_simple, hgg_conv⟩ := hg.1
+        use fun n => EReal.abs_fun (gf n - gg n)
+        constructor
+        · intro n
+          have hsub : RealSimpleFunction (gf n - gg n) := by
+            have heq : gf n - gg n = gf n + (-1 : ℝ) • gg n := by
+              funext x; simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
+            rw [heq]
+            exact RealSimpleFunction.add (hgf_simple n) ((hgg_simple n).smul (-1))
+          exact hsub.abs
+        · intro x
+          simp only [EReal.abs_fun]
+          have hcont : Continuous (fun y : ℝ => ‖y‖.toEReal) :=
+            continuous_coe_real_ereal.comp continuous_norm
+          have hconv : Filter.Tendsto (fun n => gf n x - gg n x) Filter.atTop (nhds (f x - g x)) :=
+            Filter.Tendsto.sub (hgf_conv x) (hgg_conv x)
+          exact hcont.continuousAt.tendsto.comp hconv
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (f - g)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.mono hfg_abs_meas (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+      exact AlmostAlways.ofAlways h_le
+    have h_add : UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) =
+                 UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.add hf_abs.1 hg_abs.1 (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+    calc UnsignedLebesgueIntegral (EReal.abs_fun (f - g))
+        ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+          rw [← h_add]; exact h_mono
+      _ < ⊤ := EReal.add_lt_top hf.2.ne_top hg.2.ne_top
 
-theorem ComplexAbsolutelyIntegrable.sub {d:ℕ} {f g: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (hg: ComplexAbsolutelyIntegrable g) : ComplexAbsolutelyIntegrable (f - g) := by sorry
+theorem ComplexAbsolutelyIntegrable.sub {d:ℕ} {f g: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (hg: ComplexAbsolutelyIntegrable g) : ComplexAbsolutelyIntegrable (f - g) := by
+  constructor
+  · exact ComplexMeasurable.sub hf.1 hg.1
+  · have h_le : ∀ x, EReal.abs_fun (f - g) x ≤ (EReal.abs_fun f + EReal.abs_fun g) x := fun x => by
+      simp only [EReal.abs_fun, Pi.sub_apply, Pi.add_apply]
+      rw [← EReal.coe_add]
+      exact EReal.coe_le_coe_iff.mpr (norm_sub_le (f x) (g x))
+    have hf_abs := ComplexAbsolutelyIntegrable.abs f hf
+    have hg_abs := ComplexAbsolutelyIntegrable.abs g hg
+    have hfg_abs_meas : UnsignedMeasurable (EReal.abs_fun (f - g)) := by
+      constructor
+      · intro x; simp only [EReal.abs_fun]; exact EReal.coe_nonneg.mpr (norm_nonneg _)
+      · obtain ⟨gf, hgf_simple, hgf_conv⟩ := hf.1
+        obtain ⟨gg, hgg_simple, hgg_conv⟩ := hg.1
+        use fun n => EReal.abs_fun (gf n - gg n)
+        constructor
+        · intro n
+          have hsub : ComplexSimpleFunction (gf n - gg n) := by
+            have heq : gf n - gg n = gf n + (-1 : ℂ) • gg n := by
+              funext x; simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
+            rw [heq]
+            exact ComplexSimpleFunction.add (hgf_simple n) ((hgg_simple n).smul (-1))
+          exact hsub.abs
+        · intro x
+          simp only [EReal.abs_fun]
+          have hcont : Continuous (fun y : ℂ => ‖y‖.toEReal) :=
+            continuous_coe_real_ereal.comp continuous_norm
+          have hconv : Filter.Tendsto (fun n => gf n x - gg n x) Filter.atTop (nhds (f x - g x)) :=
+            Filter.Tendsto.sub (hgf_conv x) (hgg_conv x)
+          exact hcont.continuousAt.tendsto.comp hconv
+    have h_mono : UnsignedLebesgueIntegral (EReal.abs_fun (f - g)) ≤
+                  UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.mono hfg_abs_meas (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+      exact AlmostAlways.ofAlways h_le
+    have h_add : UnsignedLebesgueIntegral (EReal.abs_fun f + EReal.abs_fun g) =
+                 UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+      apply LowerUnsignedLebesgueIntegral.add hf_abs.1 hg_abs.1 (UnsignedMeasurable.add hf_abs.1 hg_abs.1)
+    calc UnsignedLebesgueIntegral (EReal.abs_fun (f - g))
+        ≤ UnsignedLebesgueIntegral (EReal.abs_fun f) + UnsignedLebesgueIntegral (EReal.abs_fun g) := by
+          rw [← h_add]; exact h_mono
+      _ < ⊤ := EReal.add_lt_top hf.2.ne_top hg.2.ne_top
 
-theorem RealAbsolutelyIntegrable.smul {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (c:ℝ) : RealAbsolutelyIntegrable (c • f) := by sorry
+theorem RealAbsolutelyIntegrable.smul {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) (c:ℝ) : RealAbsolutelyIntegrable (c • f) := by
+  constructor
+  · -- RealMeasurable (c • f)
+    obtain ⟨g, hg_simple, hg_conv⟩ := hf.1
+    use fun n => c • g n
+    constructor
+    · intro n; exact (hg_simple n).smul c
+    · intro x
+      have hconv : Filter.Tendsto (fun n => g n x) Filter.atTop (nhds (f x)) := hg_conv x
+      have hsmul_conv : Filter.Tendsto (fun n => c • g n x) Filter.atTop (nhds (c • f x)) := by
+        simp only [smul_eq_mul]
+        exact hconv.const_mul c
+      simp only [Pi.smul_apply]
+      exact hsmul_conv
+  · -- UnsignedLebesgueIntegral (EReal.abs_fun (c • f)) < ⊤
+    have h_eq : ∀ x, EReal.abs_fun (c • f) x = ‖c‖.toEReal * EReal.abs_fun f x := fun x => by
+      simp only [EReal.abs_fun, Pi.smul_apply, smul_eq_mul, norm_mul, Real.norm_eq_abs]
+      rw [EReal.coe_mul]
+    have hf_abs := RealAbsolutelyIntegrable.abs f hf
+    have h_smul_eq : EReal.abs_fun (c • f) = (fun x => ‖c‖.toEReal * EReal.abs_fun f x) := by
+      funext x; exact h_eq x
+    rw [h_smul_eq]
+    have h_scale : UnsignedLebesgueIntegral (fun x => ‖c‖.toEReal * EReal.abs_fun f x) =
+                   ‖c‖.toEReal * UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      have h_eq' : (fun x => ‖c‖.toEReal * EReal.abs_fun f x) = (‖c‖.toEReal : EReal) • EReal.abs_fun f := by
+        funext x; simp only [Pi.smul_apply, smul_eq_mul]
+      rw [h_eq', UnsignedLebesgueIntegral]
+      have h_hom := LowerUnsignedLebesgueIntegral.hom hf_abs.1 (norm_nonneg c)
+      exact h_hom
+    rw [h_scale]
+    by_cases hc : c = 0
+    · simp only [hc, norm_zero]
+      rw [show (0 : ℝ).toEReal = 0 by rfl, zero_mul]
+      exact EReal.coe_lt_top 0
+    · have hc_pos : ‖c‖ > 0 := norm_pos_iff.mpr hc
+      have h_ne_top : ‖c‖.toEReal * UnsignedLebesgueIntegral (EReal.abs_fun f) ≠ ⊤ := by
+        rw [EReal.mul_ne_top]
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · left; exact EReal.coe_ne_bot ‖c‖
+        · left; exact le_of_lt (EReal.coe_pos.mpr hc_pos)
+        · left; exact EReal.coe_ne_top ‖c‖
+        · right; exact hf.2.ne_top
+      exact Ne.lt_top h_ne_top
 
-theorem ComplexAbsolutelyIntegrable.smul {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (c:ℂ) : ComplexAbsolutelyIntegrable (c • f) := by sorry
+theorem ComplexAbsolutelyIntegrable.smul {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) (c:ℂ) : ComplexAbsolutelyIntegrable (c • f) := by
+  constructor
+  · -- ComplexMeasurable (c • f)
+    obtain ⟨g, hg_simple, hg_conv⟩ := hf.1
+    use fun n => c • g n
+    constructor
+    · intro n; exact (hg_simple n).smul c
+    · intro x
+      have hconv : Filter.Tendsto (fun n => g n x) Filter.atTop (nhds (f x)) := hg_conv x
+      have hsmul_conv : Filter.Tendsto (fun n => c • g n x) Filter.atTop (nhds (c • f x)) := by
+        simp only [smul_eq_mul]
+        exact hconv.const_mul c
+      simp only [Pi.smul_apply]
+      exact hsmul_conv
+  · -- UnsignedLebesgueIntegral (EReal.abs_fun (c • f)) < ⊤
+    have h_eq : ∀ x, EReal.abs_fun (c • f) x = ‖c‖.toEReal * EReal.abs_fun f x := fun x => by
+      simp only [EReal.abs_fun, Pi.smul_apply, smul_eq_mul, norm_mul]
+      rw [EReal.coe_mul]
+    have hf_abs := ComplexAbsolutelyIntegrable.abs f hf
+    have h_smul_eq : EReal.abs_fun (c • f) = (fun x => ‖c‖.toEReal * EReal.abs_fun f x) := by
+      funext x; exact h_eq x
+    rw [h_smul_eq]
+    have h_scale : UnsignedLebesgueIntegral (fun x => ‖c‖.toEReal * EReal.abs_fun f x) =
+                   ‖c‖.toEReal * UnsignedLebesgueIntegral (EReal.abs_fun f) := by
+      have h_eq' : (fun x => ‖c‖.toEReal * EReal.abs_fun f x) = (‖c‖.toEReal : EReal) • EReal.abs_fun f := by
+        funext x; simp only [Pi.smul_apply, smul_eq_mul]
+      rw [h_eq', UnsignedLebesgueIntegral]
+      have h_hom := LowerUnsignedLebesgueIntegral.hom hf_abs.1 (norm_nonneg c)
+      exact h_hom
+    rw [h_scale]
+    by_cases hc : c = 0
+    · simp only [hc, norm_zero]
+      rw [show (0 : ℝ).toEReal = 0 by rfl, zero_mul]
+      exact EReal.coe_lt_top 0
+    · have hc_pos : ‖c‖ > 0 := norm_pos_iff.mpr hc
+      have h_ne_top : ‖c‖.toEReal * UnsignedLebesgueIntegral (EReal.abs_fun f) ≠ ⊤ := by
+        rw [EReal.mul_ne_top]
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · left; exact EReal.coe_ne_bot ‖c‖
+        · left; exact le_of_lt (EReal.coe_pos.mpr hc_pos)
+        · left; exact EReal.coe_ne_top ‖c‖
+        · right; exact hf.2.ne_top
+      exact Ne.lt_top h_ne_top
 
-theorem RealAbsolutelyIntegrable.of_neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (-f) := by sorry
+theorem RealAbsolutelyIntegrable.of_neg {d:ℕ} {f: EuclideanSpace' d → ℝ} (hf: RealAbsolutelyIntegrable f) : RealAbsolutelyIntegrable (-f) := by
+  have h : -f = (-1 : ℝ) • f := by funext x; simp [Pi.neg_apply, Pi.smul_apply, smul_eq_mul]
+  rw [h]
+  exact hf.smul (-1)
 
-theorem ComplexAbsolutelyIntegrable.of_neg {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) : ComplexAbsolutelyIntegrable (-f) := by sorry
+theorem ComplexAbsolutelyIntegrable.of_neg {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) : ComplexAbsolutelyIntegrable (-f) := by
+  have h : -f = (-1 : ℂ) • f := by funext x; simp [Pi.neg_apply, Pi.smul_apply, smul_eq_mul]
+  rw [h]
+  exact hf.smul (-1)
 
-theorem ComplexAbsolutelyIntegrable.conj {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) : ComplexAbsolutelyIntegrable (Complex.conj_fun f) := by sorry
+theorem ComplexAbsolutelyIntegrable.conj {d:ℕ} {f: EuclideanSpace' d → ℂ} (hf: ComplexAbsolutelyIntegrable f) : ComplexAbsolutelyIntegrable (Complex.conj_fun f) := by
+  constructor
+  · -- ComplexMeasurable (Complex.conj_fun f)
+    obtain ⟨g, hg_simple, hg_conv⟩ := hf.1
+    use fun n => Complex.conj_fun (g n)
+    constructor
+    · intro n; exact (hg_simple n).conj
+    · intro x
+      simp only [Complex.conj_fun]
+      have hconv : Filter.Tendsto (fun n => g n x) Filter.atTop (nhds (f x)) := hg_conv x
+      exact (RCLike.continuous_conj.tendsto (f x)).comp hconv
+  · -- UnsignedLebesgueIntegral (EReal.abs_fun (Complex.conj_fun f)) < ⊤
+    have h_eq : EReal.abs_fun (Complex.conj_fun f) = EReal.abs_fun f := by
+      funext x
+      simp only [EReal.abs_fun, Complex.conj_fun, RCLike.norm_conj]
+    rw [h_eq]
+    exact hf.2
 
 @[ext]
 structure PreL1 (d:ℕ) where

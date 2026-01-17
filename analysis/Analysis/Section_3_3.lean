@@ -905,10 +905,10 @@ theorem Function.inverse_bijective {X Y: Set} {f: Function X Y} (h: f.bijective)
 theorem Function.inverse_inverse {X Y: Set} {f: Function X Y} (h: f.bijective) :
     (f.inverse h).inverse (f.inverse_bijective h) = f := by sorry
 
+/-- Exercise 3.3.7 -/
 theorem Function.comp_bijective {X Y Z:Set} {f: Function X Y} {g : Function Y Z} (hf: f.bijective)
   (hg: g.bijective) : (g ○ f).bijective := by sorry
 
-/-- Exercise 3.3.7 -/
 theorem Function.inv_of_comp {X Y Z:Set} {f: Function X Y} {g : Function Y Z}
   (hf: f.bijective) (hg: g.bijective) :
     (g ○ f).inverse (Function.comp_bijective hf hg) = (f.inverse hf) ○ (g.inverse hg) := by sorry
