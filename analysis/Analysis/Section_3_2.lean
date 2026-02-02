@@ -67,7 +67,8 @@ theorem SetTheory.Set.axiom_of_regularity {A:Set} (h: A ≠ ∅) :
 -/
 theorem SetTheory.Set.emptyset_exists (h: axiom_of_universal_specification):
     ∃ (X:Set), ∀ x, x ∉ X := by
-  witness
+  sorry
+
 
 /--
   Exercise 3.2.1.  The spirit of the exercise is to establish these results without using either

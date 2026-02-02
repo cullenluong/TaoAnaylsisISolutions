@@ -248,7 +248,11 @@ theorem Nat.exists_div_mod (n:Nat) {q: Nat} (hq: q.IsPos) :
     ∃ m r: Nat, 0 ≤ r ∧ r < q ∧ n = m * q + r := by
 
   constructor
-  · use n
+  · use q
+    constructor
+    · simp[ Nat.zero_le]
+    · simp_all only [lt_self_iff_false, false_and]
+
 
 
 
