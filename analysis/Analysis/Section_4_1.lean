@@ -155,11 +155,31 @@ example : 3 = 3 —— 0 := rfl
 example : 3 = 4 —— 1 := by rw [Int.ofNat_eq, Int.eq]
 
 /-- (Not from textbook) 0 is the only natural whose cast is 0 -/
-lemma Int.cast_eq_0_iff_eq_0 (n : ℕ) : (n : Int) = 0 ↔ n = 0 := by sorry
+lemma Int.cast_eq_0_iff_eq_0 (n : ℕ) : (n : Int) = 0 ↔ n = 0 := by
+  rw [←natCast_inj]
+  nth_rw 1 [←natCast_ofNat]
+
+  --nth_rw 1 [←natCast_ofNat]
+
+  --simp only [natCast_ofNat]
+
 
 /-- Definition 4.1.4 (Negation of integers) / Exercise 4.1.2 -/
 instance Int.instNeg : Neg Int where
-  neg := Quotient.lift (fun ⟨ a, b ⟩ ↦ b —— a) (by sorry)
+  neg := Quotient.lift (fun ⟨ a, b ⟩ ↦ b —— a) (by
+    -- intro a b h
+    -- simp only [Quotient.eq]
+    intro ⟨a, b⟩ ⟨c, d⟩ h
+    simp only [PreInt.eq] at h
+    simp only [Quotient.eq]
+    simp only [Setoid.r]
+
+
+    symm
+    rw[add_comm]
+    nth_rw 2 [add_comm]
+    exact h
+  )
 
 theorem Int.neg_eq (a b:ℕ) : -(a —— b) = b —— a := rfl
 
