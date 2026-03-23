@@ -1617,6 +1617,8 @@ theorem SetTheory.Set.coe_subset (X Y:Set) :
 theorem SetTheory.Set.coe_ssubset (X Y:Set) :
     (X : _root_.Set Object) ⊂ (Y : _root_.Set Object) ↔ X ⊂ Y := by
   simp only [Set.ssubset_iff_subset_ne]
+
+
   simp_all only [Set.setOf_subset_setOf, ne_eq, coe_inj']
   rfl
 
@@ -1635,19 +1637,43 @@ theorem SetTheory.Set.coe_union (X Y: Set) :
 theorem SetTheory.Set.coe_pair (x y: Object) : ({x, y} : _root_.Set Object) = {x, y} := by simp
 
 /-- Compatibility of subtype -/
-theorem SetTheory.Set.coe_subtype (X: Set) :  (X : _root_.Set Object) = X.toSubtype := by simp
+theorem SetTheory.Set.coe_subtype (X: Set) :  (X : _root_.Set Object) = X.toSubtype := by simp only [Set.coe_setOf]
 
 /-- Compatibility of intersection -/
 theorem SetTheory.Set.coe_intersection (X Y: Set) :
-    (X ∩ Y : _root_.Set Object) = (X : _root_.Set Object) ∩ (Y : _root_.Set Object) := by simp
+    (X ∩ Y : _root_.Set Object) = (X : _root_.Set Object) ∩ (Y : _root_.Set Object) := by simp?
 
 /-- Compatibility of set difference-/
 theorem SetTheory.Set.coe_diff (X Y: Set) :
-    (X \ Y : _root_.Set Object) = (X : _root_.Set Object) \ (Y : _root_.Set Object) := by simp
+    (X \ Y : _root_.Set Object) = (X : _root_.Set Object) \ (Y : _root_.Set Object) := by simp?
 
 /-- Compatibility of disjointness -/
 theorem SetTheory.Set.coe_Disjoint (X Y: Set) :
     Disjoint (X : _root_.Set Object) (Y : _root_.Set Object) ↔ Disjoint X Y := by
-    sorry
+  -- constructor
+  -- · intro h
+  --   rw [disjoint_iff]
+  --   apply eq_empty_iff_forall_notMem.mpr
+  --   intro x hx
+  --   --simp[Set.ssubset_iff_subset_ne,Set.setOf_subset_setOf, ne_eq, coe_inj'] at h
+  --   simp_rw[ SetTheory.Set.disjoint_iff] at h
+  simp only [disjoint_iff, _root_.Set.disjoint_iff, Set.subset_empty_iff]
+  simp only [_root_.Set.eq_empty_iff_forall_notMem, Set.ext_iff]
+  constructor
+  · intro h x
+    simp [mem_inter, not_mem_empty]
+    intro hx
+    specialize h x
+    simp[mem_inter] at h
+    apply h at hx
+    exact hx
+  · intro h x
+    simp[mem_inter, not_mem_empty] at h
+    simp only [Set.mem_inter_iff, Set.mem_setOf_eq, not_and]
+    intro hx
+    specialize h x
+    apply h at hx
+    exact hx
+
 
 end Chapter3

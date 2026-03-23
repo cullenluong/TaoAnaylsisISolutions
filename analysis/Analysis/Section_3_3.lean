@@ -830,60 +830,12 @@ def Function.comp_surjective' : Decidable (∀ (X Y Z:Set) (f: Function X Y) (g 
         simp only [g] at hg0_eval
         rw[Function.eval_of] at hg0_eval
         exact hg0_eval
-      · -- this is herculean
+      ·
 
 
 
 
 
-
-  -- apply isFalse
-  -- intro h
-  -- --let X:=  ({ (0 : ℕ) , (1 : ℕ) } : Set)
-  -- --let X : Set := ({((0 : Nat) : Object)} ∪ {((1 : Nat) : Object)} : Set)
-  -- let Y : Set := {((0 : Nat ) : Object), ((1 : Nat) : Object) , ((2 : Nat) : Object)}
-  -- let Z : Set := {((0 : Nat) : Object),  ((1 : Nat) : Object)}
-  -- let X:  Set := ({((0 : Nat) : Object),((1:Nat):Object)})
-
-  -- --rw[←  SetTheory.Set.nat_equiv_coe_of_coe] at Xx
-
-  -- --let Y:= ({0,1,2}:_root_.Set ℕ)
-  -- --let Z:= ({0,1}:_root_.Set ℕ)
-
-  -- have zero_mem_Y : ((0 : Nat ):Object) ∈ (Y:Set) :=by  simp[Y]
-  -- have one_mem_Y : ((1 : Nat ):Object) ∈ (Y:Set) :=by  simp[Y]
-  -- have zero_mem_X : ((0 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
-  -- have one_mem_X : ((1 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
-  -- --have two_mem_X : ((2 : Nat ):Object) ∈ (X:Set) :=by  simp[X]
-
-  -- let xx :Set := {1,2,3}
-  -- let yy:Set := {1,2}
-
-
-
-
-  -- --let f : Function X Y := Function.mk_fn (fun _ ↦ (0:ℕ)  )
-
-  -- let f : Function X Y :=
-  --   Function.mk_fn (fun n:X  ↦
-  --     if         (n : X )  = (0:Nat): then
-  --       ⟨ (0 : Nat), zero_mem_Y ⟩
-  --     else if (n : X) = (1:X) then
-  --       ⟨ (0 : Nat), zero_mem_Y ⟩
-  --     else
-  --       -- some other element of Y, also wrapped as ⟨ value, proof_in_Y ⟩
-  --       ⟨ (1 : Nat), one_mem_Y ⟩ )
-
-
-
-    -- apply isFalse
-    -- push_neg
-    -- use Nat, Nat, {0}
-    -- use Function.mk_fn (fun x ↦ 0), Function.mk_fn (fun x ↦ ⟨0, by simp⟩)
-    -- simp only [onto, eval_of, exists_const, Subtype.forall, SetTheory.Set.mem_singleton, Subtype.mk.injEq,
-    --   forall_eq, not_forall, true_and]
-    -- use (1: Nat), (1: Nat).property
-    -- simp
 
 
 

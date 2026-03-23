@@ -167,10 +167,9 @@ lemma Int.cast_eq_0_iff_eq_0 (n : ℕ) : (n : Int) = 0 ↔ n = 0 := by
 /-- Definition 4.1.4 (Negation of integers) / Exercise 4.1.2 -/
 instance Int.instNeg : Neg Int where
   neg := Quotient.lift (fun ⟨ a, b ⟩ ↦ b —— a) (by
-    -- intro a b h
-    -- simp only [Quotient.eq]
+
     intro ⟨a, b⟩ ⟨c, d⟩ h
-    simp only [PreInt.eq] at h
+    simp only [PreInt.eq] at h --  simplifies h using the definition of integers as defined at the start
     simp only [Quotient.eq]
     simp only [Setoid.r]
 
@@ -217,11 +216,44 @@ theorem Int.not_pos_neg (x:Int) : x.IsPos ∧ x.IsNeg → False := by
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddGroup : AddGroup Int :=
-  AddGroup.ofLeftAxioms (by sorry) (by sorry) (by sorry)
+  AddGroup.ofLeftAxioms (by
+    intro x y z
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    obtain ⟨c, d, rfl⟩ := eq_diff y
+    obtain ⟨e, ⟨f, rfl⟩⟩ := eq_diff z
+
+
+    simp[add_eq]
+    simp[Setoid.r]
+    simp[add_assoc]
+
+
+  ) (by
+    intro x
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    simp[ofNat_eq,add_eq]
+
+
+  ) (by
+    intro x
+    obtain ⟨a, b, rfl⟩ := eq_diff x
+    simp[neg_eq,add_eq]
+    simp[ofNat_eq,Setoid.r]
+    simp[add_comm]
+  )
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instAddCommGroup : AddCommGroup Int where
-  add_comm := by sorry
+  add_comm := by
+    intro x y
+    obtain ⟨ a, b, rfl ⟩ := eq_diff x
+    obtain ⟨ c, d, rfl ⟩ := eq_diff y
+    simp[add_eq]
+    simp[Setoid.r]
+
+
+    simp[add_comm]
+
 
 /-- Proposition 4.1.6 (laws of algebra) / Exercise 4.1.4 -/
 instance Int.instCommMonoid : CommMonoid Int where

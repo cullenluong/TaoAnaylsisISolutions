@@ -41,7 +41,42 @@ theorem SetTheory.Set.mem_image {X Y:Set} (f:X → Y) (S: Set) (y:Object) :
 
 /-- Alternate definition of image using axiom of specification -/
 theorem SetTheory.Set.image_eq_specify {X Y:Set} (f:X → Y) (S: Set) :
-    image f S = Y.specify (fun y ↦ ∃ x:X, x.val ∈ S ∧ f x = y) := by sorry
+    image f S = Y.specify (fun y ↦ ∃ x:X, x.val ∈ S ∧ f x = y) := by
+
+  --simp only [Subtype.exists, exists_and_left]
+  --simp[image]
+  ext y
+  constructor
+  · intro h
+    --simp[mem_image]
+    rw[mem_image] at h
+    obtain ⟨x,hy,hxy⟩ := h
+    --
+
+    rw[specification_axiom'']
+    rw[← hxy]
+    let this:= (f x).property
+
+    use (f x).property,x
+
+  · intro h
+    rw [specification_axiom''] at h
+    simp at h
+    rw[mem_image]
+    obtain ⟨hy,x,hx,hxy⟩:=h
+    simp?
+    use x,hx
+    obtain ⟨h1,h2⟩:=hxy
+    use h1
+    simp[h2]
+
+
+
+
+
+
+
+
 
 /--
   Connection with Mathlib's notion of image.  Note the need to utilize the `Subtype.val` coercion
@@ -68,10 +103,28 @@ theorem SetTheory.Set.image_f_3_4_2 : image f_3_4_2 {1,2,3} = {2,4,6} := by
 example : (fun n:ℤ ↦ n^2) '' {-1,0,1,2} = {0,1,4} := by aesop
 
 theorem SetTheory.Set.mem_image_of_eval {X Y:Set} (f:X → Y) (S: Set) (x:X) :
-    x.val ∈ S → (f x).val ∈ image f S := by sorry
+    x.val ∈ S → (f x).val ∈ image f S := by
+  --this isn't in the book per se, but I suppose its a needed auxillary theorem
+  -- basically saying that given function f(x),X → Y, and set S, if x is a member of S then f(x) is a member of image of f(S)
+  -- remember that image of f(S) is set of of all  outputs of S
+    intro h
+    rw[mem_image]
+    use x
 
+
+
+
+-- counter example
 theorem SetTheory.Set.mem_image_of_eval_counter :
-    ∃ (X Y:Set) (f:X → Y) (S: Set) (x:X), ¬((f x).val ∈ image f S → x.val ∈ S) := by sorry
+    ∃ (X Y:Set) (f:X → Y) (S: Set) (x:X), ¬((f x).val ∈ image f S → x.val ∈ S) := by
+  push_neg
+  use Nat,Nat,1,{1},0
+  simp only [mem_image,mem_singleton]
+  constructor
+  · use 1
+    simp
+  · push_neg
+    simp
 
 /--
   Definition 3.4.4 (inverse images).
@@ -110,7 +163,12 @@ theorem SetTheory.Set.preimage_f_3_4_2 : preimage f_3_4_2 {2,4,6} = {1,2,3} := b
   all_goals simp
 
 theorem SetTheory.Set.image_preimage_f_3_4_2 :
-    image f_3_4_2 (preimage f_3_4_2 {1,2,3}) ≠ {1,2,3} := by sorry
+    image f_3_4_2 (preimage f_3_4_2 {1,2,3}) ≠ {1,2,3} := by
+
+    simp[image]
+    push_neg
+
+
 
 /-- Example 3.4.7 (using the Mathlib notion of preimage) -/
 example : (fun n:ℤ ↦ n^2) ⁻¹' {0,1,4} = {-2,-1,0,1,2} := by
